@@ -1,0 +1,7 @@
+{
+  "type": "zmq_tcp",
+  "camera1_stream_results": {
+      "host": "127.0.0.1",
+      "port": 65014
+  }
+}

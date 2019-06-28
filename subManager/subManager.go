@@ -1,0 +1,129 @@
+/*
+Copyright (c) 2019 Intel Corporation.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+Explicit permissions are required to publish, distribute, sublicense, and/or sell copies of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+package subManager
+
+import (
+	"encoding/json"
+
+	eismsgbus "EISMessageBus/eismsgbus"
+	common "IEdgeInsights/InfluxDBConnector/common"
+
+	"github.com/golang/glog"
+)
+
+//SubManager structure
+type SubManager struct {
+	// Will keep the map of Topic Name/measurement Name
+	// to the publisher object
+	subscribers map[string]*eismsgbus.Subscriber
+
+	clients map[string]*eismsgbus.MsgbusClient
+
+	// Info of registered Publishers
+	subConfigList []common.SubEndPoint
+
+	// Info of registered clients
+	clientConfigList []common.Clients
+}
+
+//Init will initailize the maps
+func (subMgr *SubManager) Init() {
+	subMgr.clients = make(map[string]*eismsgbus.MsgbusClient)
+	subMgr.subscribers = make(map[string]*eismsgbus.Subscriber)
+}
+
+// RegSubscriberList function will register the publishers and maintain
+// pubEndPoint
+func (subMgr *SubManager) RegSubscriberList(subName string) error {
+
+	subMgr.subConfigList = append(subMgr.subConfigList, common.SubEndPoint{subName})
+
+	return nil
+}
+
+// RegClientList will register the clients and maintain
+// pubEndPoint
+func (subMgr *SubManager) RegClientList(clientName string) error {
+
+	subMgr.clientConfigList = append(subMgr.clientConfigList, common.Clients{clientName})
+	return nil
+}
+
+// CreateClient will create the clients
+func (subMgr *SubManager) CreateClient(key string, config map[string]interface{}) error {
+
+	glog.Infof("Subscriber config is: %v", config)
+	var err error
+	subMgr.clients[key], err = eismsgbus.NewMsgbusClient(config)
+	if err != nil {
+		glog.Errorf("-- Error creating context: %v\n", err)
+	}
+
+	return nil
+}
+
+// StartAllSubscribers function will start all teh registered endpoints
+// if not started already
+func (subMgr *SubManager) StartAllSubscribers() error {
+
+	var err error
+
+	for _, pConfig := range subMgr.subConfigList {
+		msgbusclient, ok := subMgr.clients[pConfig.Measurement]
+		if ok {
+			subMgr.subscribers[pConfig.Measurement], err = msgbusclient.NewSubscriber(pConfig.Measurement)
+			if err != nil {
+				glog.Errorf("-- Error creating Subscribers: %v\n", err)
+			}
+		}
+	}
+
+	return nil
+}
+
+// ReceiveFromAll function will receive data from all the subscriber
+// end points
+func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface) {
+	glog.Infof("Subscriber available is: %v", subMgr.subscribers)
+	for topic, sub := range subMgr.subscribers {
+		glog.Infof("Subscriber topic is: %s", topic)
+		go processMsg(sub, out, topic)
+	}
+}
+
+func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic string) {
+	for {
+		msg := <-sub.MessageChannel
+		// parse it get the InfluxRow object ir.
+		bytemsg, err := json.Marshal(msg.Data)
+		if err != nil {
+			glog.Errorf("error:", err)
+		}
+		out.Write([]byte(bytemsg), topic)
+	}
+}
+
+// StopAllSubscribers function will start all the registered endpoints
+// if not started already
+func (subMgr *SubManager) StopAllSubscribers() {
+	for _, sub := range subMgr.subscribers {
+		sub.Close()
+	}
+}
+
+func (subMgr *SubManager) StopAllClient() {
+        for _, client := range subMgr.clients {
+                client.Close()
+        }
+}
+
