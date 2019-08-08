@@ -53,7 +53,6 @@ func (idbMgr *InfluxDBManager) Init() error {
 		glog.Error("Influx DB port not up")
 		return errors.New("Influx DB port not up")
 	}
-
 	clientAdmin, err := inflxUtil.CreateHTTPClient(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port, "", "", idbMgr.CnInfo.DevMode)
 	if err != nil {
 		glog.Errorf("Error creating InfluxDB client: %v", err)

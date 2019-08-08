@@ -30,9 +30,14 @@ import (
 const (
 	subServPort = "61971"
 	configJSONPath     = "/IEI/go/src/IEdgeInsights/InfluxDBConnector/config/Config.json"
-        subServHost = "localhost"
+	subServHost = "localhost"
 )
 
+var cfgMgrConfig = map[string]string{
+	"certFile":  "",
+	"keyFile":   "",
+	"trustFile": "",
+}
 
 //Creating an object for InfluxDB Manager
 var InfluxObj dbManager.InfluxDBManager
@@ -80,6 +85,7 @@ func StartDb() {
 // ZeroMQ interface
 func StartPublisher() {
 
+	InfluxObj.CnInfo = runtimeInfo
 	keywords := os.Getenv("PubTopics")
 	keyword := strings.Split(keywords, ",")
 	pubMgr.Init()
@@ -88,7 +94,7 @@ func StartPublisher() {
 	for _, key := range keyword {
 		glog.Infof("Publisher topic is : %s", key)
 		pubMgr.RegPublisherList(key)
-		cConfigList := configManager.ReadClientConfig(key, "pub")
+		cConfigList := configManager.ReadClientConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
 			pubMgr.RegClientList(key)
@@ -114,7 +120,8 @@ func StartPublisher() {
 
 //StartSubscriber Function to start the subscriber and insert data to influxdb
 func StartSubscriber() {
-
+        var SubKeyword []string
+	InfluxObj.CnInfo = runtimeInfo
 	keywords := os.Getenv("SubTopics")
 	keyword := strings.Split(keywords, ",")
 
@@ -123,16 +130,17 @@ func StartSubscriber() {
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
 	subMgr.Init()
-
+	
 	for _, key := range keyword {
-		glog.Infof("Subscriber topic is : %s", key)
+		SubKeyword = strings.Split(key, "/")
+		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
 
-		subMgr.RegSubscriberList(key)
-		cConfigList := configManager.ReadClientConfig(key, "sub")
+		subMgr.RegSubscriberList(SubKeyword[1])
+		cConfigList := configManager.ReadClientConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
-			subMgr.RegClientList(key)
-			subMgr.CreateClient(key, cConfigList)
+			subMgr.RegClientList(SubKeyword[1])
+			subMgr.CreateClient(SubKeyword[1], cConfigList)
 		}
 	}
 
@@ -142,11 +150,14 @@ func StartSubscriber() {
 
 //Function to start the query server
 func startReqReply() {
+
+	InfluxObj.CnInfo = runtimeInfo
 	keyword := os.Getenv("AppName")
 
-	glog.Infof("Query topic is : %s", keyword)
+	glog.Infof("Query service is : %s", keyword)
 
-	cConfigList := configManager.ReadClientConfig(keyword, "service")
+	cConfigList := configManager.ReadClientConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+	glog.Infof("Server config is :%v", cConfigList)
 
 	client, err := eismsgbus.NewMsgbusClient(cConfigList)
 	if err != nil {
@@ -175,7 +186,7 @@ func startReqReply() {
 		response, _ := influxQuery.QueryInflux(msg)
 		service.Response(response.Blob)
 	}
-
+    
 }
 
 //Function to stop the publishers
@@ -187,6 +198,7 @@ func cleanup() {
 
 func main() {
 	flag.Parse()
+	flag.Lookup("alsologtostderr").Value.Set("true")
 	done := make(chan bool)
 	readConfig()
 	StartDb()

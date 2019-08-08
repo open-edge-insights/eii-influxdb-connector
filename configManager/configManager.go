@@ -39,17 +39,10 @@ type InfluxConfig struct {
 
 // ReadClientConfigFromFile will read the publisher/subscriber client config
 // from the json config file
-func ReadClientConfig(topic string, topicType string) (map[string]interface{}) {
-        //client := make(map[string]interface{})
-	if topicType == "service" {
-		endPoint := os.Getenv("Server")
-		glog.Infof("Server config is :%s", endPoint)
-                client, _ := util.GetEndPointMap(topic,endPoint) 
-                return client
-	} else {
-	        client := util.GetTopicConfig(topic, topicType)
-                return client
-        }
+func ReadClientConfig(topic string, topicType string, devMode bool, cfgMgrConfig map[string]string) (map[string]interface{}) {
+        
+	client := util.GetMessageBusConfig(topic,topicType,devMode,cfgMgrConfig)
+        return client
 }
 
 // ReadInfluxConfig will read the influxdb configuration

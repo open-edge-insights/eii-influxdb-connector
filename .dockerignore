@@ -1,0 +1,24 @@
+cert-tool/
+DataAnalytics/
+EtcdUI/
+dist_libs/
+docker_setup/deploy/*.tar.gz
+FactoryControlApp/
+kapacitor/
+licenses/
+Telegraf/
+external/
+ImageStore/
+VideoIngestion/
+tools/
+.git
+
+# Recursively remove all unwanted files
+**/*.md
+**/*.mp4
+**/*.avi
+**/*.pyc
+**/*.tar
+**/*.log
+**/*.log.*
+
