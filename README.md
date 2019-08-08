@@ -32,8 +32,7 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
 
 ## `Installation`
 
-* Follow [Etcd/README.md](../Etcd/README.md) to have EIS pre-loaded data in
-  etcd
+* Follow [provision/README.md](../docker_setup/provision/README.md) for EIS provisioning
 
 * Run InfluxDBConnector
 
