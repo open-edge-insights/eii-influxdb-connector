@@ -29,7 +29,7 @@ import (
 
 const (
 	subServPort = "61971"
-	configJSONPath     = "/IEI/go/src/IEdgeInsights/InfluxDBConnector/config/Config.json"
+	configJSONPath     = "/EIS/go/src/IEdgeInsights/InfluxDBConnector/config/Config.json"
 	subServHost = "localhost"
 )
 
