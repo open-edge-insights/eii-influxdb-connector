@@ -24,6 +24,7 @@ import (
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
 	configmgr "IEdgeInsights/libs/ConfigManager"
+        util "IEdgeInsights/libs/common/go"
 
 	"strconv"
 
@@ -31,9 +32,14 @@ import (
 )
 
 const (
-	subServPort    = "61971"
-	configJSONPath = "/EIS/go/src/IEdgeInsights/InfluxDBConnector/config/Config.json"
+        subServPort    = "61971"
 	subServHost    = "localhost"
+	secretCaPath   = "/run/secrets/ca_etcd"
+	secretCertPath = "/run/secrets/etcd_InfluxDBConnector_cert"
+	secretKeyPath  = "/run/secrets/etcd_InfluxDBConnector_key"
+	influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
+	influxKeyPath  = "/etc/ssl/influxdb/influxdb_server_key.pem"
+	influxCaPath   = "/etc/ssl/ca/ca_certificate.pem"
 )
 
 var cfgMgrConfig = map[string]string{
@@ -53,7 +59,7 @@ var runtimeInfo common.ContainerConfig
 func readConfig() {
 	var errConfig error
 	var errRuntimeInfo error
-	credConfig, errConfig = configManager.ReadInfluxConfig()
+	credConfig, errConfig = configManager.ReadInfluxConfig(cfgMgrConfig)
 	if errConfig != nil {
 		glog.Error("Error in reading the DB credentials : %v" + errConfig.Error())
 		os.Exit(-1)
@@ -97,7 +103,7 @@ func StartPublisher() {
 	for _, key := range keyword {
 		glog.Infof("Publisher topic is : %s", key)
 		pubMgr.RegPublisherList(key)
-		cConfigList := configManager.ReadClientConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+		cConfigList := util.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
 			pubMgr.RegClientList(key)
@@ -139,7 +145,7 @@ func StartSubscriber() {
 		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
 
 		subMgr.RegSubscriberList(SubKeyword[1])
-		cConfigList := configManager.ReadClientConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+		cConfigList := util.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
 			subMgr.RegClientList(SubKeyword[1])
@@ -159,8 +165,7 @@ func startReqReply() {
 
 	glog.Infof("Query service is : %s", keyword)
 
-	cConfigList := configManager.ReadClientConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
-	glog.Infof("Server config is :%v", cConfigList)
+	cConfigList := util.GetMessageBusConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 	client, err := eismsgbus.NewMsgbusClient(cConfigList)
 	if err != nil {
@@ -203,15 +208,18 @@ func main() {
 	devMode, _ := strconv.ParseBool(os.Getenv("DEV_MODE"))
 	if devMode != true {
 		cfgMgrConfig = map[string]string{
-			"certFile":  "/run/secrets/etcd_InfluxDBConnector_cert",
-			"keyFile":   "/run/secrets/etcd_InfluxDBConnector_key",
-			"trustFile": "/run/secrets/ca_cert",
+			"certFile":  secretCertPath,
+			"keyFile":   secretKeyPath,
+			"trustFile": secretCaPath,
 		}
+                _ = configManager.ReadCertKey("server_cert", influxCertPath, cfgMgrConfig)
+		_ = configManager.ReadCertKey("server_key", influxKeyPath, cfgMgrConfig)
+		_ = configManager.ReadCertKey("ca_cert", influxCaPath, cfgMgrConfig)
 	}
 	// Initializing Etcd to set env variables
 	_ = configmgr.Init("etcd", cfgMgrConfig)
 	flag.Lookup("alsologtostderr").Value.Set("true")
-	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
+        flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
 	done := make(chan bool)
 	readConfig()

@@ -14,9 +14,9 @@ package dbManager
 
 import (
 	"encoding/json"
+	"os"
 	"reflect"
 	"time"
-	"os"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
 	inflxUtil "IEdgeInsights/libs/common/influxdb"
@@ -35,7 +35,6 @@ type InfluxWriter struct {
 	DbInfo common.DbCredential
 }
 
-
 func (ir *InfluxWriter) parseData(msg []byte, topic string) {
 	tags := make(map[string]string)
 	field := make(map[string]interface{})
@@ -49,17 +48,17 @@ func (ir *InfluxWriter) parseData(msg []byte, topic string) {
 		return
 	}
 
-        for key, value := range data	{
-	     if (reflect.ValueOf(value).Type().Kind() == reflect.Float64) {
-                     field[key] = value
-	     } else if (reflect.ValueOf(value).Type().Kind() == reflect.String) {
-                     field[key] = value
-	     } else if (reflect.ValueOf(value).Type().Kind() == reflect.Bool) {
-                     field[key] = value
-	     } else if (reflect.ValueOf(value).Type().Kind() == reflect.Int) {
-                     field[key] = value
-             }
-        }
+	for key, value := range data {
+		if reflect.ValueOf(value).Type().Kind() == reflect.Float64 {
+			field[key] = value
+		} else if reflect.ValueOf(value).Type().Kind() == reflect.String {
+			field[key] = value
+		} else if reflect.ValueOf(value).Type().Kind() == reflect.Bool {
+			field[key] = value
+		} else if reflect.ValueOf(value).Type().Kind() == reflect.Int {
+			field[key] = value
+		}
+	}
 
 	ir.Measurement = topic
 	ir.Tags = tags
@@ -90,7 +89,6 @@ func (ir *InfluxWriter) insertData() {
 		glog.Errorf("Write Error %s", err.Error())
 	}
 }
-
 
 func (ir *InfluxWriter) Write(data []byte, topic string) {
 	ir.parseData(data, topic)

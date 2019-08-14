@@ -18,20 +18,17 @@ RUN wget https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION
     dpkg -i influxdb_${INFLUXDB_VERSION}_amd64.deb && \
     rm -rf influxdb_${INFLUXDB_VERSION}_amd64.deb
 
+RUN mkdir -p /etc/ssl/influxdb && \
+    mkdir -p /etc/ssl/ca
 
-
-ADD InfluxDBConnector.go ./InfluxDBConnector/InfluxDBConnector.go
-ADD common ./InfluxDBConnector/common
-ADD configManager ./InfluxDBConnector/configManager
-ADD pubManager ./InfluxDBConnector/pubManager
-ADD subManager ./InfluxDBConnector/subManager
-ADD dbManager ./InfluxDBConnector/dbManager
+COPY . ./InfluxDBConnector/
 
 RUN go build -o /EIS/go/bin/InfluxDBConnector InfluxDBConnector/InfluxDBConnector.go
 ARG EIS_UID
 ARG EIS_USER_NAME
 RUN chown ${EIS_UID} /EIS/go/src/IEdgeInsights
-RUN chown -R ${EIS_UID} /etc/ssl/
+RUN chown -R ${EIS_UID} /etc/ssl/influxdb && \
+    chown -R ${EIS_UID} /etc/ssl/ca 
 ENTRYPOINT ["InfluxDBConnector"]
 HEALTHCHECK NONE
 

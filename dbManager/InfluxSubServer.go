@@ -13,6 +13,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package dbManager
 
 import (
+        //"crypto/tls"
+	//"crypto/x509"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -31,6 +33,9 @@ type InfluxSubCtx struct {
 
 const (
 	maxPointsBuffered = 100
+	influxCaPath    = "/etc/ssl/ca/ca_certificate.pem"
+        influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
+	influxKeyPath     = "/etc/ssl/influxdb/influxdb_server_key.pem"
 )
 
 func (subCtx *InfluxSubCtx) handlePointData() {
@@ -73,8 +78,49 @@ func (subCtx *InfluxSubCtx) startServer(devMode bool) {
 
 	// Start the HTTP server handler
 	http.HandleFunc("/", subCtx.httpHandlerFunc)
+	if devMode {
+		err = http.ListenAndServe(dstAddr, nil)
+	} else {
+                //TODO Enable Mutual TLS
+                /*
+                serverCert, err := ioutil.ReadFile(influxCertPath)
+                if err != nil {
+                    glog.Errorf("%v", err)
+                }
+                serverKey, err := ioutil.ReadFile(influxKeyPath)
+                if err != nil {
+                    glog.Errorf("%v", err)
+                }
+                servTLSCert, err := tls.X509KeyPair(serverCert, serverKey)
+                if err != nil {
+	             glog.Errorf("invalid key pair: %v", err)
+                }
+                // Create a CA certificate pool and add cert.pem to it
+                caCert, err := ioutil.ReadFile(influxCaPath)
+                if err != nil {
+                    glog.Errorf("%v", err)
+                }
+                caCertPool := x509.NewCertPool()
+                caCertPool.AppendCertsFromPEM(caCert)
 
-	err = http.ListenAndServe(dstAddr, nil)
+                // Create the TLS Config with the CA pool and enable Client certificate validation
+                tlsConfig := &tls.Config{
+                    Certificates: []tls.Certificate{servTLSCert},
+                    ClientCAs: caCertPool,
+                    ClientAuth: tls.RequireAndVerifyClientCert,
+                }
+
+                tlsConfig.BuildNameToCertificate()
+
+                // Create  a Server instance to listen on port 61971 with the TLS config
+                server := &http.Server{
+                    Addr:      dstAddr,
+                    TLSConfig: tlsConfig,
+                }
+		err = server.ListenAndServeTLS(influxCertPath, influxKeyPath)
+                */
+                err = http.ListenAndServeTLS(dstAddr, influxCertPath, influxKeyPath, nil)
+	}
 
 	if err != nil {
 		glog.Errorf("Error in connection to client due to: %v\n", err)

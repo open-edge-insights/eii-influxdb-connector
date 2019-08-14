@@ -62,7 +62,6 @@ func (subMgr *SubManager) RegClientList(clientName string) error {
 // CreateClient will create the clients
 func (subMgr *SubManager) CreateClient(key string, config map[string]interface{}) error {
 
-	glog.Infof("Subscriber config is: %v", config)
 	var err error
 	subMgr.clients[key], err = eismsgbus.NewMsgbusClient(config)
 	if err != nil {
@@ -76,14 +75,14 @@ func (subMgr *SubManager) CreateClient(key string, config map[string]interface{}
 // if not started already
 func (subMgr *SubManager) StartAllSubscribers() error {
 
-	var err error
-
 	for _, pConfig := range subMgr.subConfigList {
 		msgbusclient, ok := subMgr.clients[pConfig.Measurement]
 		if ok {
-			subMgr.subscribers[pConfig.Measurement], err = msgbusclient.NewSubscriber(pConfig.Measurement)
+			tempSub, err := msgbusclient.NewSubscriber(pConfig.Measurement)
 			if err != nil {
 				glog.Errorf("-- Error creating Subscribers: %v\n", err)
+			} else {
+				subMgr.subscribers[pConfig.Measurement] = tempSub
 			}
 		}
 	}
@@ -122,8 +121,7 @@ func (subMgr *SubManager) StopAllSubscribers() {
 }
 
 func (subMgr *SubManager) StopAllClient() {
-        for _, client := range subMgr.clients {
-                client.Close()
-        }
+	for _, client := range subMgr.clients {
+		client.Close()
+	}
 }
-

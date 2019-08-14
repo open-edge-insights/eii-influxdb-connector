@@ -14,11 +14,11 @@ package configManager
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"strconv"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
-        util "IEdgeInsights/libs/common/go"
 	configmgr "IEdgeInsights/libs/ConfigManager"
 
 	"github.com/golang/glog"
@@ -37,28 +37,16 @@ type InfluxConfig struct {
 	} `json:"influxdb"`
 }
 
-// ReadClientConfigFromFile will read the publisher/subscriber client config
-// from the json config file
-func ReadClientConfig(topic string, topicType string, devMode bool, cfgMgrConfig map[string]string) (map[string]interface{}) {
-        
-	client := util.GetMessageBusConfig(topic,topicType,devMode,cfgMgrConfig)
-        return client
-}
-
 // ReadInfluxConfig will read the influxdb configuration
 // from the json file
-func ReadInfluxConfig() (common.DbCredential, error) {
+func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 	var influx InfluxConfig
 	var influxCred common.DbCredential
-	config := map[string]string{
-		      "CertFile": "",
-		      "KeyFile": "",
-		      "TrustFile": "",
-	      }
 
 	mgr := configmgr.Init("etcd", config)
-        appName := os.Getenv("AppName")
-	value, err := mgr.GetConfig("/"+appName+"/config")
+	appName := os.Getenv("AppName")
+
+	value, err := mgr.GetConfig("/" + appName + "/config")
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /InfluxDBConnector/influxdb_config")
 		return influxCred, err
@@ -96,4 +84,23 @@ func ReadContainerInfo() (common.ContainerConfig, error) {
 	}
 
 	return cInfo, nil
+}
+
+func ReadCertKey(keyName string, filePath string, config map[string]string) error {
+	mgr := configmgr.Init("etcd", config)
+	appName := os.Getenv("AppName")
+
+	value, err := mgr.GetConfig("/" + appName + "/" + keyName)
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for / %s / %s", appName, keyName)
+		return err
+	}
+
+	err = ioutil.WriteFile(filePath, []byte(value), 0644)
+	if err != nil {
+		glog.Errorf("Error creating %v", filePath)
+		return err
+	}
+
+        return nil
 }
