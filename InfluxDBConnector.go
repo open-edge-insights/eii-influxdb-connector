@@ -13,9 +13,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package main
 
 import (
+	"flag"
 	"os"
 	"strings"
-	"flag"
 
 	eismsgbus "EISMessageBus/eismsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
@@ -23,14 +23,17 @@ import (
 	dbManager "IEdgeInsights/InfluxDBConnector/dbManager"
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
+	configmgr "IEdgeInsights/libs/ConfigManager"
+
+	"strconv"
 
 	"github.com/golang/glog"
 )
 
 const (
-	subServPort = "61971"
-	configJSONPath     = "/EIS/go/src/IEdgeInsights/InfluxDBConnector/config/Config.json"
-	subServHost = "localhost"
+	subServPort    = "61971"
+	configJSONPath = "/EIS/go/src/IEdgeInsights/InfluxDBConnector/config/Config.json"
+	subServHost    = "localhost"
 )
 
 var cfgMgrConfig = map[string]string{
@@ -39,7 +42,7 @@ var cfgMgrConfig = map[string]string{
 	"trustFile": "",
 }
 
-//Creating an object for InfluxDB Manager
+// InfluxObj is an object for InfluxDB Manager
 var InfluxObj dbManager.InfluxDBManager
 
 var pubMgr pubManager.PubManager
@@ -120,7 +123,7 @@ func StartPublisher() {
 
 //StartSubscriber Function to start the subscriber and insert data to influxdb
 func StartSubscriber() {
-        var SubKeyword []string
+	var SubKeyword []string
 	InfluxObj.CnInfo = runtimeInfo
 	keywords := os.Getenv("SubTopics")
 	keyword := strings.Split(keywords, ",")
@@ -130,7 +133,7 @@ func StartSubscriber() {
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
 	subMgr.Init()
-	
+
 	for _, key := range keyword {
 		SubKeyword = strings.Split(key, "/")
 		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
@@ -186,19 +189,30 @@ func startReqReply() {
 		response, _ := influxQuery.QueryInflux(msg)
 		service.Response(response.Blob)
 	}
-    
+
 }
 
 //Function to stop the publishers
 func cleanup() {
-    pubMgr.StopAllClient()
-    pubMgr.StopAllPublisher()
+	pubMgr.StopAllClient()
+	pubMgr.StopAllPublisher()
 }
-
 
 func main() {
 	flag.Parse()
+	devMode, _ := strconv.ParseBool(os.Getenv("DEV_MODE"))
+	if devMode != true {
+		cfgMgrConfig = map[string]string{
+			"certFile":  "/run/secrets/etcd_InfluxDBConnector_cert",
+			"keyFile":   "/run/secrets/etcd_InfluxDBConnector_key",
+			"trustFile": "/run/secrets/ca_cert",
+		}
+	}
+	// Initializing Etcd to set env variables
+	_ = configmgr.Init("etcd", cfgMgrConfig)
 	flag.Lookup("alsologtostderr").Value.Set("true")
+	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
+	flag.Set("v", os.Getenv("GO_VERBOSE"))
 	done := make(chan bool)
 	readConfig()
 	StartDb()
