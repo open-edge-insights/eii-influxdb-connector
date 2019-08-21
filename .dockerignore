@@ -1,7 +1,6 @@
 cert-tool/
 DataAnalytics/
 EtcdUI/
-dist_libs/
 docker_setup/deploy/*.tar.gz
 FactoryControlApp/
 kapacitor/
