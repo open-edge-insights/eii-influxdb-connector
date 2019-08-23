@@ -13,14 +13,13 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package dbManager
 
 import (
+	"encoding/json"
 	"errors"
-	"strings"
 
 	types "EISMessageBus/pkg/types"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	inflxUtil "IEdgeInsights/libs/common/influxdb"
 
-	"encoding/json"
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"
 )
@@ -41,7 +40,6 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 	}
 	Command, ok := msg.Data["command"].(string)
 	if ok {
-		Command = strings.ToLower(Command)
 		q := client.Query{
 			Command:   Command,
 			Database:  iq.DbInfo.Database,
@@ -49,17 +47,21 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 		}
 
 		if response, err := clientadmin.Query(q); err == nil && response.Error() == nil {
-
+			
 			if len(response.Results[0].Series) > 0 {
 				output := response.Results[0].Series[0]
+				glog.V(1).Infof("%v", output)
 				Output, err := json.Marshal(output)
-				response := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, Output)
+				response := types.NewMsgEnvelope(map[string]interface{}{"Data": string(Output)}, nil)
 				return response, err
 			}
 			val := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, nil)
 			err = errors.New("Response is nil")
 			return val, err
-		}
+		} else {
+			glog.V(1).Infof("%v", response)
+			glog.V(1).Infof("%v", response.Error())
+		} 
 
 	}
 	val := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, nil)

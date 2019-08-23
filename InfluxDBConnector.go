@@ -190,9 +190,9 @@ func startReqReply() {
 			glog.Errorf("-- Error receiving request: %v\n", err)
 			return
 		}
-		glog.Infof("Command receivce: %s", msg)
+		glog.Infof("Command received: %s", msg)
 		response, _ := influxQuery.QueryInflux(msg)
-		service.Response(response.Blob)
+		service.Response(response.Data)
 	}
 
 }
