@@ -3,8 +3,7 @@ ARG EIS_VERSION
 FROM ia_gobase:${EIS_VERSION} as gobase
 LABEL description="InfluxDBConnector image"
 
-RUN mkdir -p ${GO_WORK_DIR}/log && \
-    apt-get update
+RUN apt-get update
 
 ENV INFLUXDB_GO_PATH ${GOPATH}/src/github.com/influxdata/influxdb
 RUN mkdir -p ${INFLUXDB_GO_PATH} && \
