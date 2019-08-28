@@ -27,7 +27,7 @@ import (
 
 // InfluxQuery structure
 type InfluxQuery struct {
-	CnInfo common.ContainerConfig
+	CnInfo common.AppConfig
 	DbInfo common.DbCredential
 }
 

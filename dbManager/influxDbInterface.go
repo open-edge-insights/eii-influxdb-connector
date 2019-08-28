@@ -26,7 +26,7 @@ import (
 
 // InfluxDBManager structure
 type InfluxDBManager struct {
-	CnInfo common.ContainerConfig
+	CnInfo common.AppConfig
 	DbInfo common.DbCredential
 	//subInfoList []common.SubScriptionInfo
 }

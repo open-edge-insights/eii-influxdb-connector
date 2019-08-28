@@ -29,6 +29,7 @@ type SubScriptionInfo struct {
 	DbName string
 	Host   string
 	Port   string
+	Worker int
 }
 
 // Filter Interface
@@ -63,9 +64,10 @@ type ReqEndPoint struct {
 }
 
 // ContainerConfig structure
-type ContainerConfig struct {
-	DevMode    bool
-	//Certs      map[string]interface{}
+type AppConfig struct {
+	DevMode   bool
+	PubWorker int64
+	SubWorker int64
 }
 
 // SubEndPoint structure

@@ -31,7 +31,7 @@ type InfluxWriter struct {
 	Tags        map[string]string
 	Fields      map[string]interface{}
 
-	CnInfo common.ContainerConfig
+	CnInfo common.AppConfig
 	DbInfo common.DbCredential
 }
 

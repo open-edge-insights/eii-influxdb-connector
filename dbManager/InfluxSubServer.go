@@ -38,8 +38,8 @@ const (
 	influxKeyPath     = "/etc/ssl/influxdb/influxdb_server_key.pem"
 )
 
-func (subCtx *InfluxSubCtx) handlePointData() {
-
+func (subCtx *InfluxSubCtx) handlePointData(workerId int) {
+	glog.Infof("Go routine %v for subscription started", workerId)
 	for {
 		// Wait for data in point data buffer
 		buf := <-subCtx.pData
@@ -74,7 +74,9 @@ func (subCtx *InfluxSubCtx) startServer(devMode bool) {
 
 	// Make the channel for handling point data
 	subCtx.pData = make(chan string, maxPointsBuffered)
-	go subCtx.handlePointData()
+	for workerId := 0; workerId < subCtx.SbInfo.Worker; workerId++ {
+		go subCtx.handlePointData(workerId)
+	}
 
 	// Start the HTTP server handler
 	http.HandleFunc("/", subCtx.httpHandlerFunc)

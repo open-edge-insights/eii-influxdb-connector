@@ -92,15 +92,17 @@ func (subMgr *SubManager) StartAllSubscribers() error {
 
 // ReceiveFromAll function will receive data from all the subscriber
 // end points
-func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface) {
+func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface, worker int) {
 	glog.Infof("Subscriber available is: %v", subMgr.subscribers)
 	for topic, sub := range subMgr.subscribers {
 		glog.Infof("Subscriber topic is: %s", topic)
-		go processMsg(sub, out, topic)
+		for workerId := 0; workerId < worker; workerId++ {
+			go processMsg(sub, out, topic, workerId)
+		}
 	}
 }
 
-func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic string) {
+func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic string, workerId int) {
 	for {
 		msg := <-sub.MessageChannel
 		// parse it get the InfluxRow object ir.
@@ -108,6 +110,7 @@ func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic str
 		if err != nil {
 			glog.Errorf("error:", err)
 		}
+		glog.Infof("Subscribe data received from topic: %s in subroutine %v", topic, workerId)
 		out.Write([]byte(bytemsg), topic)
 	}
 }

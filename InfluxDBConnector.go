@@ -24,7 +24,7 @@ import (
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
 	configmgr "IEdgeInsights/libs/ConfigManager"
-        util "IEdgeInsights/libs/common/go"
+	util "IEdgeInsights/libs/common/go"
 
 	"strconv"
 
@@ -32,7 +32,7 @@ import (
 )
 
 const (
-        subServPort    = "61971"
+	subServPort    = "61971"
 	subServHost    = "localhost"
 	secretCaPath   = "/run/secrets/ca_etcd"
 	secretCertPath = "/run/secrets/etcd_InfluxDBConnector_cert"
@@ -53,7 +53,7 @@ var InfluxObj dbManager.InfluxDBManager
 
 var pubMgr pubManager.PubManager
 var credConfig common.DbCredential
-var runtimeInfo common.ContainerConfig
+var runtimeInfo common.AppConfig
 
 //Function to read the DB credential and container runtime info from the config file
 func readConfig() {
@@ -65,7 +65,7 @@ func readConfig() {
 		os.Exit(-1)
 	}
 
-	runtimeInfo, errRuntimeInfo = configManager.ReadContainerInfo()
+	runtimeInfo, errRuntimeInfo = configManager.ReadContainerInfo(cfgMgrConfig)
 	if errRuntimeInfo != nil {
 		glog.Error("Error in reading the Runtime Info : %v" + errRuntimeInfo.Error())
 		os.Exit(-1)
@@ -117,7 +117,7 @@ func StartPublisher() {
 	SubObj.DbName = InfluxObj.DbInfo.Database
 	SubObj.Host = subServHost
 	SubObj.Port = subServPort
-
+	SubObj.Worker = int(runtimeInfo.PubWorker)
 	// Subscribe to the influxdb database
 	err := InfluxObj.Subscribe(SubObj, &pubMgr)
 	if err != nil {
@@ -154,7 +154,7 @@ func StartSubscriber() {
 	}
 
 	subMgr.StartAllSubscribers()
-	subMgr.ReceiveFromAll(&influxWrite)
+	subMgr.ReceiveFromAll(&influxWrite, int(InfluxObj.CnInfo.SubWorker))
 }
 
 //Function to start the query server
@@ -212,14 +212,14 @@ func main() {
 			"keyFile":   secretKeyPath,
 			"trustFile": secretCaPath,
 		}
-                _ = configManager.ReadCertKey("server_cert", influxCertPath, cfgMgrConfig)
+		_ = configManager.ReadCertKey("server_cert", influxCertPath, cfgMgrConfig)
 		_ = configManager.ReadCertKey("server_key", influxKeyPath, cfgMgrConfig)
 		_ = configManager.ReadCertKey("ca_cert", influxCaPath, cfgMgrConfig)
 	}
 	// Initializing Etcd to set env variables
 	_ = configmgr.Init("etcd", cfgMgrConfig)
 	flag.Lookup("alsologtostderr").Value.Set("true")
-        flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
+	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
 	done := make(chan bool)
 	readConfig()

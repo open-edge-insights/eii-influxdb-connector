@@ -48,7 +48,7 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 
 	value, err := mgr.GetConfig("/" + appName + "/config")
 	if err != nil {
-		glog.Errorf("Not able to read value from etcd for /InfluxDBConnector/influxdb_config")
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxCred, err
 	}
 
@@ -72,14 +72,41 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 
 // ReadContainerInfo will read the environment variable
 // for the TPM and DEV mode info
-func ReadContainerInfo() (common.ContainerConfig, error) {
+func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 
-	var cInfo common.ContainerConfig
+	var cInfo common.AppConfig
 	var err error
 	devMode := os.Getenv("DEV_MODE")
 	cInfo.DevMode, err = strconv.ParseBool(devMode)
 	if err != nil {
-		glog.Errorf("Fail to read DEV_MODE environment variable: %s", err)
+		glog.Errorf("Fail to read DEV_MODE environment variable: %v", err)
+		return cInfo, err
+	}
+
+	data := make(map[string]interface{})
+	mgr := configmgr.Init("etcd", config)
+	appName := os.Getenv("AppName")
+
+	value, err := mgr.GetConfig("/" + appName + "/config")
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		return cInfo, err
+	}
+
+	err = json.Unmarshal([]byte(value), &data)
+	if err != nil {
+		glog.Errorf("json error:", err.Error())
+		return cInfo, err
+	}
+
+	cInfo.PubWorker, err = strconv.ParseInt(data["pub_workers"].(string), 10, 0)
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		return cInfo, err
+	}
+	cInfo.SubWorker, err = strconv.ParseInt(data["sub_workers"].(string), 10, 0)
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return cInfo, err
 	}
 
@@ -92,7 +119,7 @@ func ReadCertKey(keyName string, filePath string, config map[string]string) erro
 
 	value, err := mgr.GetConfig("/" + appName + "/" + keyName)
 	if err != nil {
-		glog.Errorf("Not able to read value from etcd for / %s / %s", appName, keyName)
+		glog.Errorf("Not able to read value from etcd for / %v / %v", appName, keyName)
 		return err
 	}
 
@@ -102,5 +129,5 @@ func ReadCertKey(keyName string, filePath string, config map[string]string) erro
 		return err
 	}
 
-        return nil
+	return nil
 }
