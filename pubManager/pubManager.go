@@ -15,7 +15,9 @@ package pubManager
 import (
 	eismsgbus "EISMessageBus/eismsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
-
+        "strings"
+        "strconv"
+        "time"
 	"github.com/golang/glog"
 )
 
@@ -106,8 +108,16 @@ func (pubMgr *PubManager) Write(data []byte) {
 		return
 	}
 	pub, ok := pubMgr.publishers[attribute]
+
 	if ok {
+                if common.Profiling == true {
+                    temp := strings.Fields(string(data))
+                    fields := temp[1] + ",ts_idbconn_pub_exit=" + strconv.FormatInt((time.Now().UnixNano()/1e6), 10)
+                    data = []byte(temp[0] + " " + fields + " " + temp[2])
+                }
+
 		msg := map[string]interface{}{"data": string(data)}
+                msg["idbconn_pub"] = "true"
 		glog.Infof("Published message: %v", msg)
 		pub.Publish(msg)
 	}

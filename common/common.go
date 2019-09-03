@@ -74,3 +74,5 @@ type AppConfig struct {
 type SubEndPoint struct {
 	Measurement string
 }
+
+var Profiling bool = false

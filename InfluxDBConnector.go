@@ -146,7 +146,6 @@ func StartSubscriber() {
 
 		subMgr.RegSubscriberList(SubKeyword[1])
 		cConfigList := util.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
-
 		if cConfigList != nil {
 			subMgr.RegClientList(SubKeyword[1])
 			subMgr.CreateClient(SubKeyword[1], cConfigList)
@@ -206,6 +205,9 @@ func cleanup() {
 func main() {
 	flag.Parse()
 	devMode, _ := strconv.ParseBool(os.Getenv("DEV_MODE"))
+	profiling, _ := strconv.ParseBool(os.Getenv("PROFILING_MODE"))
+	common.Profiling = profiling
+
 	if devMode != true {
 		cfgMgrConfig = map[string]string{
 			"certFile":  secretCertPath,

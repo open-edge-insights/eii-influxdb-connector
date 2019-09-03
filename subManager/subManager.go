@@ -13,10 +13,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package subManager
 
 import (
-	"encoding/json"
-
 	eismsgbus "EISMessageBus/eismsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
+	"encoding/json"
+	"strconv"
+	"time"
 
 	"github.com/golang/glog"
 )
@@ -106,6 +107,11 @@ func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic str
 	for {
 		msg := <-sub.MessageChannel
 		// parse it get the InfluxRow object ir.
+
+		if common.Profiling == true {
+			msg.Data["ts_idbconn_entry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+		}
+
 		bytemsg, err := json.Marshal(msg.Data)
 		if err != nil {
 			glog.Errorf("error:", err)
