@@ -39,7 +39,7 @@ type PubManager struct {
 	filter common.Filter
 }
 
-//Init will initailize the maps 
+//Init will initailize the maps
 func (pubMgr *PubManager) Init() {
 	pubMgr.clients = make(map[string]*eismsgbus.MsgbusClient)
 	pubMgr.publishers = make(map[string]*eismsgbus.Publisher)
@@ -113,17 +113,16 @@ func (pubMgr *PubManager) Write(data []byte) {
 	}
 }
 
-// StopAllPublisher function will start all teh registered endpoints
-// if not started already
+// StopAllPublisher function will stop all the registered publishers
 func (pubMgr *PubManager) StopAllPublisher() {
 	for _, pub := range pubMgr.publishers {
 		pub.Close()
 	}
 }
 
+// StopAllClient function will stop all the registered clients
 func (pubMgr *PubManager) StopAllClient() {
-        for _, client := range pubMgr.clients {
-                client.Close()
-        }
+	for _, client := range pubMgr.clients {
+		client.Close()
+	}
 }
-

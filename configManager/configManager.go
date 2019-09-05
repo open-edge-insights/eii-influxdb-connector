@@ -71,7 +71,7 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 }
 
 // ReadContainerInfo will read the environment variable
-// for the TPM and DEV mode info
+// for the subworkers, pubworkers and DEV mode info
 func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 
 	var cInfo common.AppConfig
@@ -113,6 +113,8 @@ func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 	return cInfo, nil
 }
 
+// ReadCertKey will read the certificate from etcd
+// and write to path passed as argument
 func ReadCertKey(keyName string, filePath string, config map[string]string) error {
 	mgr := configmgr.Init("etcd", config)
 	appName := os.Getenv("AppName")

@@ -63,7 +63,7 @@ type ReqEndPoint struct {
 	EndPoint string
 }
 
-// ContainerConfig structure
+// AppConfig structure
 type AppConfig struct {
 	DevMode   bool
 	PubWorker int64

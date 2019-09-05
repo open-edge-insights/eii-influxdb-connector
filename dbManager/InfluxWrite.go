@@ -30,22 +30,22 @@ type InfluxWriter struct {
 	Measurement string
 	Tags        map[string]string
 	Fields      map[string]interface{}
-
-	CnInfo common.AppConfig
-	DbInfo common.DbCredential
+	CnInfo      common.AppConfig
+	DbInfo      common.DbCredential
 }
 
-func (ir *InfluxWriter) parseData(msg []byte, topic string) {
+func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
 	tags := make(map[string]string)
 	field := make(map[string]interface{})
 	data := make(map[string]interface{})
+	var tempir InfluxWriter
 
 	err := json.Unmarshal(msg, &data)
 
 	if err != nil {
 
 		glog.Errorf("Not able to Parse data %s", err.Error())
-		return
+		return nil
 	}
 
 	for key, value := range data {
@@ -60,12 +60,14 @@ func (ir *InfluxWriter) parseData(msg []byte, topic string) {
 		}
 	}
 
-	ir.Measurement = topic
-	ir.Tags = tags
-	ir.Fields = field
+	tempir.Measurement = topic
+	tempir.Tags = tags
+	tempir.Fields = field
+
+	return &tempir
 }
 
-func (ir *InfluxWriter) insertData() {
+func (ir *InfluxWriter) insertData(data *InfluxWriter) {
 	clientadmin, err := inflxUtil.CreateHTTPClient(ir.DbInfo.Host, ir.DbInfo.Port, ir.DbInfo.Username, ir.DbInfo.Password, ir.CnInfo.DevMode)
 
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
@@ -77,7 +79,7 @@ func (ir *InfluxWriter) insertData() {
 		glog.Errorf("Error in creating batch point %s", err.Error())
 	}
 
-	pt, err := client.NewPoint(ir.Measurement, ir.Tags, ir.Fields, time.Now())
+	pt, err := client.NewPoint(data.Measurement, data.Tags, data.Fields, time.Now())
 	if err != nil {
 		glog.Errorf("point error %s", err.Error())
 		os.Exit(-1)
@@ -91,6 +93,6 @@ func (ir *InfluxWriter) insertData() {
 }
 
 func (ir *InfluxWriter) Write(data []byte, topic string) {
-	ir.parseData(data, topic)
-	ir.insertData()
+	InfluxRecord := ir.parseData(data, topic)
+	ir.insertData(InfluxRecord)
 }

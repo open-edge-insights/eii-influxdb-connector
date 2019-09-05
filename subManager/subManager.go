@@ -96,13 +96,13 @@ func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface, worker int)
 	glog.Infof("Subscriber available is: %v", subMgr.subscribers)
 	for topic, sub := range subMgr.subscribers {
 		glog.Infof("Subscriber topic is: %s", topic)
-		for workerId := 0; workerId < worker; workerId++ {
-			go processMsg(sub, out, topic, workerId)
+		for workerID := 0; workerID < worker; workerID++ {
+			go processMsg(sub, out, topic, workerID)
 		}
 	}
 }
 
-func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic string, workerId int) {
+func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic string, workerID int) {
 	for {
 		msg := <-sub.MessageChannel
 		// parse it get the InfluxRow object ir.
@@ -110,19 +110,19 @@ func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic str
 		if err != nil {
 			glog.Errorf("error:", err)
 		}
-		glog.Infof("Subscribe data received from topic: %s in subroutine %v", topic, workerId)
+		glog.Infof("Subscribe data received from topic: %s in subroutine %v", topic, workerID)
 		out.Write([]byte(bytemsg), topic)
 	}
 }
 
-// StopAllSubscribers function will start all the registered endpoints
-// if not started already
+// StopAllSubscribers function will stop all the registered subscriber
 func (subMgr *SubManager) StopAllSubscribers() {
 	for _, sub := range subMgr.subscribers {
 		sub.Close()
 	}
 }
 
+// StopAllClient function will stop all the registered client
 func (subMgr *SubManager) StopAllClient() {
 	for _, client := range subMgr.clients {
 		client.Close()
