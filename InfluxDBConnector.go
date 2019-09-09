@@ -24,7 +24,7 @@ import (
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
 	configmgr "IEdgeInsights/libs/ConfigManager"
-	util "IEdgeInsights/libs/common/go"
+	msgbusutil "IEdgeInsights/util/msgbusutil"
 
 	"strconv"
 
@@ -103,7 +103,7 @@ func StartPublisher() {
 	for _, key := range keyword {
 		glog.Infof("Publisher topic is : %s", key)
 		pubMgr.RegPublisherList(key)
-		cConfigList := util.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+		cConfigList := msgbusutil.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
 			pubMgr.RegClientList(key)
@@ -145,7 +145,8 @@ func StartSubscriber() {
 		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
 
 		subMgr.RegSubscriberList(SubKeyword[1])
-		cConfigList := util.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+		cConfigList := msgbusutil.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+
 		if cConfigList != nil {
 			subMgr.RegClientList(SubKeyword[1])
 			subMgr.CreateClient(SubKeyword[1], cConfigList)
@@ -164,7 +165,7 @@ func startReqReply() {
 
 	glog.Infof("Query service is : %s", keyword)
 
-	cConfigList := util.GetMessageBusConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+	cConfigList := msgbusutil.GetMessageBusConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 	client, err := eismsgbus.NewMsgbusClient(cConfigList)
 	if err != nil {

@@ -20,7 +20,7 @@ import (
 	"time"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
-	inflxUtil "IEdgeInsights/libs/common/influxdb"
+	inflxUtil "IEdgeInsights/util/influxdb"
 
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"

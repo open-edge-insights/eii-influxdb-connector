@@ -25,7 +25,7 @@ FROM ia_common:$EIS_VERSION as common
 FROM gobase
 
 COPY --from=common /libs ${GO_WORK_DIR}/libs
-COPY --from=common /Util ${GO_WORK_DIR}/Util
+COPY --from=common /util ${GO_WORK_DIR}/util
 
 RUN cd ${GO_WORK_DIR}/libs/EISMessageBus && \
     rm -rf build deps && mkdir -p build && cd build && \
@@ -51,5 +51,4 @@ RUN chown ${EIS_UID} ${GO_WORK_DIR}
 RUN chown -R ${EIS_UID} /etc/ssl/influxdb && \
     chown -R ${EIS_UID} /etc/ssl/ca 
 ENTRYPOINT ["InfluxDBConnector"]
-HEALTHCHECK NONE
 

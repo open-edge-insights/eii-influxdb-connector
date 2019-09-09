@@ -18,7 +18,7 @@ import (
 
 	types "EISMessageBus/pkg/types"
 	common "IEdgeInsights/InfluxDBConnector/common"
-	inflxUtil "IEdgeInsights/libs/common/influxdb"
+	inflxUtil "IEdgeInsights/util/influxdb"
 
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"
@@ -47,7 +47,7 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 		}
 
 		if response, err := clientadmin.Query(q); err == nil && response.Error() == nil {
-			
+
 			if len(response.Results[0].Series) > 0 {
 				output := response.Results[0].Series[0]
 				glog.V(1).Infof("%v", output)
@@ -61,7 +61,7 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 		} else {
 			glog.V(1).Infof("%v", response)
 			glog.V(1).Infof("%v", response.Error())
-		} 
+		}
 
 	}
 	val := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, nil)
