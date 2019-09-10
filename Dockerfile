@@ -1,7 +1,9 @@
 # Dockerfile for InfluxDBConnector
 ARG EIS_VERSION
-FROM ia_gobase:${EIS_VERSION} as gobase
+FROM ia_eisbase:${EIS_VERSION} as eisbase
 LABEL description="InfluxDBConnector image"
+
+WORKDIR ${GO_WORK_DIR}
 
 RUN apt-get update
 
@@ -22,7 +24,7 @@ RUN mkdir -p /etc/ssl/influxdb && \
 
 FROM ia_common:$EIS_VERSION as common
 
-FROM gobase
+FROM eisbase
 
 COPY --from=common /libs ${GO_WORK_DIR}/libs
 COPY --from=common /util ${GO_WORK_DIR}/util
