@@ -30,6 +30,9 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
         }
  ```
 
+ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration].md).
+
+
 ## `Installation`
 
 * Follow [provision/README.md](../docker_setup/provision/README.md) for EIS provisioning
@@ -41,6 +44,5 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
     1. Build and Run VideoAnalytics as container
         ```
         $ cd [repo]/docker_setup
-        $ ln -sf InfluxDBConnector/.dockerignore ../.dockerignore
         $ docker-compose up --build ia_influxdbconnector
         ```
