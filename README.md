@@ -30,12 +30,13 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
         }
  ```
 
- For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration].md).
+ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration.md).
 
 
 ## `Installation`
 
-* Follow [provision/README.md](../docker_setup/provision/README.md) for EIS provisioning
+* Follow [provision/README.md](../README#provision-eis.md) for EIS provisioning
+  if not done already as part of EIS stack setup
 
 * Run InfluxDBConnector
 
