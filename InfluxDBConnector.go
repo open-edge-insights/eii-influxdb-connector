@@ -24,8 +24,8 @@ import (
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
 	configmgr "IEdgeInsights/libs/ConfigManager"
+	util "IEdgeInsights/util"
 	msgbusutil "IEdgeInsights/util/msgbusutil"
-
 	"strconv"
 
 	"github.com/golang/glog"
@@ -34,9 +34,6 @@ import (
 const (
 	subServPort    = "61971"
 	subServHost    = "localhost"
-	secretCaPath   = "/run/secrets/ca_etcd"
-	secretCertPath = "/run/secrets/etcd_InfluxDBConnector_cert"
-	secretKeyPath  = "/run/secrets/etcd_InfluxDBConnector_key"
 	influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
 	influxKeyPath  = "/etc/ssl/influxdb/influxdb_server_key.pem"
 	influxCaPath   = "/etc/ssl/ca/ca_certificate.pem"
@@ -205,20 +202,16 @@ func cleanup() {
 
 func main() {
 	flag.Parse()
-	devMode, _ := strconv.ParseBool(os.Getenv("DEV_MODE"))
 	profiling, _ := strconv.ParseBool(os.Getenv("PROFILING_MODE"))
 	common.Profiling = profiling
 
-	if devMode != true {
-		cfgMgrConfig = map[string]string{
-			"certFile":  secretCertPath,
-			"keyFile":   secretKeyPath,
-			"trustFile": secretCaPath,
-		}
-		_ = configManager.ReadCertKey("server_cert", influxCertPath, cfgMgrConfig)
-		_ = configManager.ReadCertKey("server_key", influxKeyPath, cfgMgrConfig)
-		_ = configManager.ReadCertKey("ca_cert", influxCaPath, cfgMgrConfig)
-	}
+	appName := os.Getenv("AppName")
+	cfgMgrConfig = util.GetCryptoMap(appName)
+
+	_ = configManager.ReadCertKey("server_cert", influxCertPath, cfgMgrConfig)
+	_ = configManager.ReadCertKey("server_key", influxKeyPath, cfgMgrConfig)
+	_ = configManager.ReadCertKey("ca_cert", influxCaPath, cfgMgrConfig)
+
 	// Initializing Etcd to set env variables
 	_ = configmgr.Init("etcd", cfgMgrConfig)
 	flag.Lookup("alsologtostderr").Value.Set("true")
