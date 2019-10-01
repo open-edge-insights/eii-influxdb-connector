@@ -129,6 +129,9 @@ func StartSubscriber() {
 	var SubKeyword []string
 	InfluxObj.CnInfo = runtimeInfo
 	keywords := os.Getenv("SubTopics")
+	if len(keywords) == 0 {
+                return
+        }
 	keyword := strings.Split(keywords, ",")
 
 	var subMgr subManager.SubManager
