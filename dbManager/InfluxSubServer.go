@@ -153,8 +153,13 @@ func (subCtx *InfluxSubCtx) startServer(devMode bool) {
 
 		// Create  a Server instance to listen on port 61971 with the TLS config
 		server := &http.Server{
-			Addr:      dstAddr,
-			TLSConfig: tlsConfig,
+			Addr:      			dstAddr,
+			ReadTimeout:    	60 * time.Second,
+			ReadHeaderTimeout:  60 * time.Second,
+			WriteTimeout:    	60 * time.Second,
+			IdleTimeout:    	60 * time.Second,
+			TLSConfig: 			tlsConfig,
+			MaxHeaderBytes: 	1 << 20,
 		}
 		err = server.ListenAndServeTLS(influxCertPath, influxKeyPath)
 
