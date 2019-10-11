@@ -37,6 +37,8 @@ const (
 	influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
 	influxKeyPath  = "/etc/ssl/influxdb/influxdb_server_key.pem"
 	influxCaPath   = "/etc/ssl/ca/ca_certificate.pem"
+	maxTopics      = 50
+	maxSubTopics   = 50
 )
 
 var cfgMgrConfig = map[string]string{
@@ -96,17 +98,20 @@ func StartPublisher() {
 	keyword := strings.Split(keywords, ",")
 	pubMgr.Init()
 	pubMgr.RegFilter(&InfluxObj)
+	if len(keyword) > maxTopics {
+		glog.Infof("Max Topics Exceeded", len(keyword))
+	} else {
+		for _, key := range keyword {
+			glog.Infof("Publisher topic is : %s", key)
+			pubMgr.RegPublisherList(key)
+			cConfigList := msgbusutil.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
-	for _, key := range keyword {
-		glog.Infof("Publisher topic is : %s", key)
-		pubMgr.RegPublisherList(key)
-		cConfigList := msgbusutil.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+			if cConfigList != nil {
+				pubMgr.RegClientList(key)
+				pubMgr.CreateClient(key, cConfigList)
+			}
 
-		if cConfigList != nil {
-			pubMgr.RegClientList(key)
-			pubMgr.CreateClient(key, cConfigList)
 		}
-
 	}
 
 	pubMgr.StartAllPublishers()
@@ -139,17 +144,20 @@ func StartSubscriber() {
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
 	subMgr.Init()
+	if len(keyword) > maxSubTopics {
+		glog.Infof("Max SubTopics Exceeded", len(keyword))
+	} else {
+		for _, key := range keyword {
+			SubKeyword = strings.Split(key, "/")
+			glog.Infof("Subscriber topic is : %v", SubKeyword[1])
 
-	for _, key := range keyword {
-		SubKeyword = strings.Split(key, "/")
-		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
+			subMgr.RegSubscriberList(SubKeyword[1])
+			cConfigList := msgbusutil.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
-		subMgr.RegSubscriberList(SubKeyword[1])
-		cConfigList := msgbusutil.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
-
-		if cConfigList != nil {
-			subMgr.RegClientList(SubKeyword[1])
-			subMgr.CreateClient(SubKeyword[1], cConfigList)
+			if cConfigList != nil {
+				subMgr.RegClientList(SubKeyword[1])
+				subMgr.CreateClient(SubKeyword[1], cConfigList)
+			}
 		}
 	}
 

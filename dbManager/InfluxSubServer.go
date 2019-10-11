@@ -47,12 +47,12 @@ func (subCtx *InfluxSubCtx) handlePointData(workerID int) {
 		// Wait for data in point data buffer
 		buf := <-subCtx.pData
 
-                if common.Profiling == true {
-                    temp := strings.Fields(buf)
-                    fields := temp[1] + ",ts_idbconn_pub_queue_exit=" + strconv.FormatInt((time.Now().UnixNano()/1e6), 10)
-                    buf = temp[0] + " " + fields + " " + temp[2]
-                    //glog.Infof("modified reqBody is %v", buf)
-                }
+		if common.Profiling == true {
+			temp := strings.Fields(buf)
+			fields := temp[1] + ",ts_idbconn_pub_queue_exit=" + strconv.FormatInt((time.Now().UnixNano()/1e6), 10)
+			buf = temp[0] + " " + fields + " " + temp[2]
+			//glog.Infof("modified reqBody is %v", buf)
+		}
 
 		subCtx.OutInterface.Write([]byte(buf))
 	}
@@ -65,27 +65,30 @@ func (subCtx *InfluxSubCtx) httpHandlerFunc(w http.ResponseWriter, req *http.Req
 		glog.Errorf("Error in reading the data: %v", err)
 	}
 
-        var ts_temp1, ts_temp2 int64
+	var ts_temp1, ts_temp2 int64
 
 	if common.Profiling == true {
-            temp := strings.Fields(string(reqBody))
-            ts_temp1 = time.Now().UnixNano()/1e6
-	    fields := temp[1] + ",ts_idbconn_pub_entry=" + strconv.FormatInt(ts_temp1, 10)
-	    reqBody = []byte(temp[0] + " " + fields + " " + temp[2])
+		temp := strings.Fields(string(reqBody))
+		ts_temp1 = time.Now().UnixNano() / 1e6
+		fields := temp[1] + ",ts_idbconn_pub_entry=" + strconv.FormatInt(ts_temp1, 10)
+		reqBody = []byte(temp[0] + " " + fields + " " + temp[2])
 	}
 
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8") // normal header
+	w.Header().Set("Strict-Transport-Security", "max-age=1024000; includeSubDomains")
+	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Received a POST request\n"))
 
-        if common.Profiling == true {
-            //glog.Infof("reqBody is %v", string(reqBody))
-            temp := strings.Fields(string(reqBody))
-            ts_temp2 = time.Now().UnixNano()/1e6
-            diff := ts_temp2 - ts_temp1
-            fields := temp[1] + ",ts_idbconn_pub_queue_entry=" + strconv.FormatInt(ts_temp2, 10)
-            fields += ",ts_idbconn_influx_respose_write=" + strconv.FormatInt(diff, 10)
-            reqBody = []byte(temp[0] + " " + fields + " " + temp[2])
-            //glog.Infof("modified reqBody is %v", string(reqBody))
-        }
+	if common.Profiling == true {
+		//glog.Infof("reqBody is %v", string(reqBody))
+		temp := strings.Fields(string(reqBody))
+		ts_temp2 = time.Now().UnixNano() / 1e6
+		diff := ts_temp2 - ts_temp1
+		fields := temp[1] + ",ts_idbconn_pub_queue_entry=" + strconv.FormatInt(ts_temp2, 10)
+		fields += ",ts_idbconn_influx_respose_write=" + strconv.FormatInt(diff, 10)
+		reqBody = []byte(temp[0] + " " + fields + " " + temp[2])
+		//glog.Infof("modified reqBody is %v", string(reqBody))
+	}
 
 	select {
 	case subCtx.pData <- string(reqBody):

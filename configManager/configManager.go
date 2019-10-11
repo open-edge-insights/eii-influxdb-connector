@@ -124,11 +124,14 @@ func ReadCertKey(keyName string, filePath string, config map[string]string) erro
 		glog.Errorf("Not able to read value from etcd for / %v / %v", appName, keyName)
 		return err
 	}
-
-	err = ioutil.WriteFile(filePath, []byte(value), 0644)
-	if err != nil {
-		glog.Errorf("Error creating %v", filePath)
-		return err
+	if filePath != "" {
+		err = ioutil.WriteFile(filePath, []byte(value), 0644)
+		if err != nil {
+			glog.Errorf("Error creating %v", filePath)
+			return err
+		}
+	} else {
+		glog.Errorf("File Path is Empty")
 	}
 
 	return nil
