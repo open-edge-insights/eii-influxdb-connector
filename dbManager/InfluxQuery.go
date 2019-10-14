@@ -15,6 +15,7 @@ package dbManager
 import (
 	"encoding/json"
 	"errors"
+	"regexp"
 
 	types "EISMessageBus/pkg/types"
 	common "IEdgeInsights/InfluxDBConnector/common"
@@ -26,8 +27,9 @@ import (
 
 // InfluxQuery structure
 type InfluxQuery struct {
-	CnInfo common.AppConfig
-	DbInfo common.DbCredential
+	CnInfo         common.AppConfig
+	DbInfo         common.DbCredential
+	queryValidator *regexp.Regexp
 }
 
 // QueryInflux will execute the select command and
@@ -39,7 +41,9 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 		glog.Errorf("client error %s", err)
 	}
 	Command, ok := msg.Data["command"].(string)
-	if ok {
+	validQuery := iq.queryValidator.MatchString(Command)
+
+	if ok && validQuery {
 		q := client.Query{
 			Command:   Command,
 			Database:  iq.DbInfo.Database,
@@ -67,4 +71,8 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 	val := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, nil)
 	err = errors.New("Please send proper select query")
 	return val, err
+}
+
+func (iq *InfluxQuery) Init() {
+	iq.queryValidator = regexp.MustCompile(`^(select|SELECT)`)
 }

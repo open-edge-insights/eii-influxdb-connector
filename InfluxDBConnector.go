@@ -130,8 +130,8 @@ func StartSubscriber() {
 	InfluxObj.CnInfo = runtimeInfo
 	keywords := os.Getenv("SubTopics")
 	if len(keywords) == 0 {
-                return
-        }
+		return
+	}
 	keyword := strings.Split(keywords, ",")
 
 	var subMgr subManager.SubManager
@@ -181,6 +181,7 @@ func startReqReply() {
 	var influxQuery dbManager.InfluxQuery
 	influxQuery.DbInfo = credConfig
 	influxQuery.CnInfo = runtimeInfo
+	influxQuery.Init()
 
 	flag := true
 
