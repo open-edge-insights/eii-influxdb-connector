@@ -226,7 +226,7 @@ func main() {
 
 	// Initializing Etcd to set env variables
 	_ = configmgr.Init("etcd", cfgMgrConfig)
-	flag.Lookup("alsologtostderr").Value.Set("true")
+	flag.Set("logtostderr", "true")
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
 	done := make(chan bool)

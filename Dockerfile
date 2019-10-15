@@ -5,8 +5,6 @@ LABEL description="InfluxDBConnector image"
 
 WORKDIR ${GO_WORK_DIR}
 
-RUN apt-get update
-
 ENV INFLUXDB_GO_PATH ${GOPATH}/src/github.com/influxdata/influxdb
 RUN mkdir -p ${INFLUXDB_GO_PATH} && \
     git clone https://github.com/influxdata/influxdb ${INFLUXDB_GO_PATH} && \
