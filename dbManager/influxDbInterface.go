@@ -28,11 +28,18 @@ import (
 type InfluxDBManager struct {
 	CnInfo common.AppConfig
 	DbInfo common.DbCredential
-	//subInfoList []common.SubScriptionInfo
 }
 
 // Init will start the InfluxDb server and create a user
 func (idbMgr *InfluxDBManager) Init() error {
+
+	portUp := util.CheckPortAvailability(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port)
+	portupErrmsg := "Influx DB port is already up, Exiting service!!!"
+	portdownErrmsg := "Influx DB port not up"
+	if portUp {
+		glog.Error(portupErrmsg)
+		return errors.New(portupErrmsg)
+	}
 
 	var cmd *exec.Cmd
 
@@ -48,10 +55,10 @@ func (idbMgr *InfluxDBManager) Init() error {
 		return err
 	}
 
-	portUp := util.CheckPortAvailability(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port)
+	portUp = util.CheckPortAvailability(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port)
 	if !portUp {
-		glog.Error("Influx DB port not up")
-		return errors.New("Influx DB port not up")
+		glog.Error(portdownErrmsg)
+		return errors.New(portdownErrmsg)
 	}
 	clientAdmin, err := inflxUtil.CreateHTTPClient(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port, "", "", idbMgr.CnInfo.DevMode)
 	if err != nil {
