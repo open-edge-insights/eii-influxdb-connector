@@ -33,7 +33,7 @@ type InfluxDBManager struct {
 // Init will start the InfluxDb server and create a user
 func (idbMgr *InfluxDBManager) Init() error {
 
-	portUp := util.CheckPortAvailability(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port)
+	portUp := util.CheckPortOccupied(idbMgr.DbInfo.Host, idbMgr.DbInfo.Port)
 	portupErrmsg := "Influx DB port is already up, Exiting service!!!"
 	portdownErrmsg := "Influx DB port not up"
 	if portUp {
