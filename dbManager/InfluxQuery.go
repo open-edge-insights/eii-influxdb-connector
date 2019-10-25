@@ -19,7 +19,7 @@ import (
 
 	types "EISMessageBus/pkg/types"
 	common "IEdgeInsights/InfluxDBConnector/common"
-	inflxUtil "IEdgeInsights/util/influxdb"
+	inflxUtil "IEdgeInsights/common/util/influxdb"
 
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"

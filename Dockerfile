@@ -24,10 +24,10 @@ FROM ia_common:$EIS_VERSION as common
 
 FROM eisbase
 
-COPY --from=common /libs ${GO_WORK_DIR}/libs
-COPY --from=common /util ${GO_WORK_DIR}/util
+COPY --from=common /libs ${GO_WORK_DIR}/common/libs
+COPY --from=common /util ${GO_WORK_DIR}/common/util
 
-RUN cd ${GO_WORK_DIR}/libs/EISMessageBus && \
+RUN cd ${GO_WORK_DIR}/common/libs/EISMessageBus && \
     rm -rf build deps && mkdir -p build && cd build && \
     cmake -DWITH_GO=ON .. && \
     make && \
@@ -40,7 +40,7 @@ ENV CGO_CFLAGS -I$MSGBUS_DIR/include/
 ENV CGO_LDFLAGS -L$MSGBUS_DIR/build -leismsgbus
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/usr/local/lib
 
-RUN ln -s ${GO_WORK_DIR}/libs/EISMessageBus/go/EISMessageBus/ $GOPATH/src/EISMessageBus
+RUN ln -s ${GO_WORK_DIR}/common/libs/EISMessageBus/go/EISMessageBus/ $GOPATH/src/EISMessageBus
 
 COPY . ./InfluxDBConnector/
 

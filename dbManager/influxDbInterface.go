@@ -18,8 +18,8 @@ import (
 	"strings"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
-	util "IEdgeInsights/util"
-	inflxUtil "IEdgeInsights/util/influxdb"
+	util "IEdgeInsights/common/util"
+	inflxUtil "IEdgeInsights/common/util/influxdb"
 
 	"github.com/golang/glog"
 )

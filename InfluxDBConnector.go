@@ -23,9 +23,9 @@ import (
 	dbManager "IEdgeInsights/InfluxDBConnector/dbManager"
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
-	configmgr "IEdgeInsights/libs/ConfigManager"
-	util "IEdgeInsights/util"
-	msgbusutil "IEdgeInsights/util/msgbusutil"
+	configmgr "IEdgeInsights/common/libs/ConfigManager"
+	util "IEdgeInsights/common/util"
+	msgbusutil "IEdgeInsights/common/util/msgbusutil"
 	"strconv"
 
 	"github.com/golang/glog"
