@@ -117,7 +117,7 @@ func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic str
 			glog.Errorf("error:", err)
 		}
 		glog.Infof("Subscribe data received from topic: %s in subroutine %v", topic, workerID)
-		out.Write([]byte(bytemsg), topic)
+		out.Write(bytemsg, topic)
 	}
 }
 

@@ -32,13 +32,14 @@ import (
 )
 
 const (
-	subServPort    = "61971"
-	subServHost    = "localhost"
-	influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
-	influxKeyPath  = "/etc/ssl/influxdb/influxdb_server_key.pem"
-	influxCaPath   = "/etc/ssl/ca/ca_certificate.pem"
-	maxTopics      = 50
-	maxSubTopics   = 50
+	subServPort             = "61971"
+	subServHost             = "localhost"
+	influxCertPath          = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
+	influxKeyPath           = "/etc/ssl/influxdb/influxdb_server_key.pem"
+	influxCaPath            = "/etc/ssl/ca/ca_certificate.pem"
+	maxTopics               = 50
+	maxSubTopics            = 50
+	influxDBConnectorConfig = "InfluxDBConnector/ignore_attributes.cfg"
 )
 
 var cfgMgrConfig = map[string]string{
@@ -141,8 +142,14 @@ func StartSubscriber() {
 
 	var subMgr subManager.SubManager
 	var influxWrite dbManager.InfluxWriter
+	var err error
+
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
+	influxWrite.IgnoreList, err = configManager.ReadInfluxDBConnectorConfig(influxDBConnectorConfig)
+	if err != nil {
+		glog.Error("Error in creating Ignore list")
+	}
 	subMgr.Init()
 	if len(keyword) > maxSubTopics {
 		glog.Infof("Max SubTopics Exceeded", len(keyword))

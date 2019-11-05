@@ -13,10 +13,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package configManager
 
 import (
+	"bufio"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
 	configmgr "IEdgeInsights/common/libs/ConfigManager"
@@ -135,4 +137,31 @@ func ReadCertKey(keyName string, filePath string, config map[string]string) erro
 	}
 
 	return nil
+}
+
+// ReadInfluxDBConnectorConfig will read the file
+// and create an Ignore list
+func ReadInfluxDBConnectorConfig(filePath string) ([]string, error) {
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		glog.Errorf(err.Error())
+		glog.Errorf("Error opening %s", filePath)
+		return nil, err
+	}
+
+	reader := bufio.NewReader(file)
+
+	var ignoreList []string
+	var line string
+	for {
+		line, err = reader.ReadString('\n')
+		if err != nil {
+			break
+		}
+		line = strings.TrimSuffix(line, "\n")
+		ignoreList = append(ignoreList, line)
+	}
+	glog.Infof("List of Attributes to be ignored while flatening: %v", ignoreList)
+	return ignoreList, nil
 }

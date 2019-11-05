@@ -14,6 +14,7 @@ package dbManager
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"reflect"
 	"strconv"
@@ -21,7 +22,6 @@ import (
 
 	common "IEdgeInsights/InfluxDBConnector/common"
 	inflxUtil "IEdgeInsights/common/util/influxdb"
-
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"
 )
@@ -33,6 +33,7 @@ type InfluxWriter struct {
 	Fields      map[string]interface{}
 	CnInfo      common.AppConfig
 	DbInfo      common.DbCredential
+	IgnoreList  []string
 }
 
 func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
@@ -52,7 +53,15 @@ func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
 		data["ts_idbconn_proc_entry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 	}
 
-	for key, value := range data {
+	flatjson, err := ir.getflatten(data, "")
+	if err != nil {
+		glog.Errorf("Not able to flatten json %s for:%v", err.Error(), data)
+		return nil
+	}
+
+	glog.Infof("Data after flattening: %v", flatjson)
+
+	for key, value := range flatjson {
 		if reflect.ValueOf(value).Type().Kind() == reflect.Float64 {
 			field[key] = value
 		} else if reflect.ValueOf(value).Type().Kind() == reflect.String {
@@ -69,6 +78,141 @@ func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
 	tempir.Fields = field
 
 	return &tempir
+}
+
+func (ir *InfluxWriter) getflatten(nested map[string]interface{}, prefix string) (map[string]interface{}, error) {
+	flatmap := make(map[string]interface{})
+
+	err := flatten(true, flatmap, nested, prefix, ir.IgnoreList)
+	if err != nil {
+		return nil, err
+	}
+
+	return flatmap, nil
+}
+
+func flatten(top bool, flatMap map[string]interface{}, nested interface{}, prefix string, ignorelist []string) error {
+	var flag int
+
+	assign := func(newKey string, v interface{}, ignoretag bool) error {
+		if ignoretag {
+			switch v.(type) {
+			case map[string]interface{}, []interface{}:
+				v, err := json.Marshal(&v)
+				if err != nil {
+					glog.Error("Not able to Marshal data for key:%s=%v", newKey, v)
+					return err
+				}
+				flatMap[newKey] = string(v)
+			default:
+				flatMap[newKey] = v
+			}
+
+		} else {
+			switch v.(type) {
+			case map[string]interface{}, []interface{}:
+				if err := flatten(false, flatMap, v, newKey, ignorelist); err != nil {
+					glog.Error("Not able to flatten data for key:%s=%v", newKey, v)
+					return err
+				}
+			default:
+				flatMap[newKey] = v
+			}
+		}
+		return nil
+	}
+
+	switch nested.(type) {
+	case map[string]interface{}:
+		for k, v := range nested.(map[string]interface{}) {
+
+			ok := matchkey(ignorelist, k)
+
+			if ok && prefix == "" {
+				flag = 1
+			} else if ok && prefix != "" {
+				flag = 0
+			} else {
+				flag = -1
+			}
+
+			if flag == 1 {
+				err := assign(k, v, true)
+				if err != nil {
+					return err
+				}
+			} else if flag == 0 {
+				newKey := createkey(top, prefix, k)
+				err := assign(newKey, v, true)
+				if err != nil {
+					return err
+				}
+			} else {
+				newKey := createkey(top, prefix, k)
+				err := assign(newKey, v, false)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	case []interface{}:
+		for i, v := range nested.([]interface{}) {
+			switch v.(type) {
+			case map[string]interface{}:
+				for tag, value := range v.(map[string]interface{}) {
+					ok := matchkey(ignorelist, tag)
+					if ok {
+						subkey := strconv.Itoa(i) + "." + tag
+						newKey := createkey(top, prefix, subkey)
+						err := assign(newKey, value, true)
+						if err != nil {
+							return err
+						}
+					} else {
+						newKey := createkey(top, prefix, strconv.Itoa(i))
+						err := assign(newKey, v, false)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			default:
+				newKey := createkey(top, prefix, strconv.Itoa(i))
+				err := assign(newKey, v, false)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+	default:
+		return errors.New("Not a valid input: map or slice")
+	}
+
+	return nil
+}
+
+func createkey(top bool, prefix, subkey string) string {
+	key := prefix
+
+	if top {
+		key += subkey
+	} else {
+		key += "." + subkey
+	}
+
+	return key
+}
+
+func matchkey(ignorelist []string, value string) bool {
+
+	for _, val := range ignorelist {
+		if val == value {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (ir *InfluxWriter) insertData(data *InfluxWriter) {

@@ -30,7 +30,19 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
         }
  ```
 
- For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration.md).
+In case of nested json data, by default InfluxDBConnector will flatten the nested json and push
+the flat data to InfluxDB, In order to avoid the flattening of any particular nested key please mention the
+tag key in the [ignore_attributes.cfg](../docker_setup/config/ignore_attributes.cfg) present in config directory
+in docker setup. Currently "defects" key is ignored from flattening. Every key to be ignored has to be in newline.
+
+ for example,
+ ```
+   tag1
+   tag2
+   tag3
+ ```
+
+For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration.md).
 
 
 ## `Installation`
