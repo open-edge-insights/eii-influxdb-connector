@@ -31,9 +31,6 @@ COPY --from=common /usr/local/include /usr/local/include
 COPY --from=common /usr/local/lib /usr/local/lib
 COPY --from=common ${GO_WORK_DIR}/../EISMessageBus ${GO_WORK_DIR}/../EISMessageBus
 
-ENV CGO_LDFLAGS "$CGO_LDFLAGS -leismsgbus -leismsgenv -leisutils"
-ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/usr/local/lib
-
 COPY . ./InfluxDBConnector/
 
 RUN go build -o /EIS/go/bin/InfluxDBConnector InfluxDBConnector/InfluxDBConnector.go
