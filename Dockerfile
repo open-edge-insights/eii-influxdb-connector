@@ -39,5 +39,16 @@ ARG EIS_USER_NAME
 RUN chown ${EIS_UID} ${GO_WORK_DIR}
 RUN chown -R ${EIS_UID} /etc/ssl/influxdb && \
     chown -R ${EIS_UID} /etc/ssl/ca 
+
+RUN mkdir -p ${GOPATH}/temp/IEdgeInsights/InfluxDBConnector && \
+    mv ${GO_WORK_DIR}/InfluxDBConnector/influx_start.sh ${GOPATH}/temp/IEdgeInsights/InfluxDBConnector/ && \
+    rm -rf ${GOPATH}/src && \
+    rm -rf ${GOPATH}/bin/dep && \
+    rm -rf ${GOPATH}/pkg && \
+    rm -rf /usr/local/go && \
+    mv ${GOPATH}/temp ${GOPATH}/src
+
+RUN chown -R ${EIS_UID} ${GOPATH}/src
+
 ENTRYPOINT ["InfluxDBConnector"]
 
