@@ -50,5 +50,11 @@ RUN mkdir -p ${GOPATH}/temp/IEdgeInsights/InfluxDBConnector && \
 
 RUN chown -R ${EIS_UID} ${GOPATH}/src
 
+#Removing build dependencies
+RUN apt-get remove -y wget && \
+    apt-get remove -y git && \
+    apt-get remove curl && \
+    apt-get autoremove -y
+
 ENTRYPOINT ["InfluxDBConnector"]
 
