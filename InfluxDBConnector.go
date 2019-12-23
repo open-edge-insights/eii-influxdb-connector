@@ -92,15 +92,15 @@ func StartDb() {
 
 // StartPublisher function to register the publisher and subscribe to influxdb
 // ZeroMQ interface
-func StartPublisher() {
+func StartPublisher(pubTopics string) {
 
 	InfluxObj.CnInfo = runtimeInfo
-	keywords := os.Getenv("PubTopics")
-	keyword := strings.Split(keywords, ",")
+	keyword := strings.Split(pubTopics, ",")
 	pubMgr.Init()
 	pubMgr.RegFilter(&InfluxObj)
 	if len(keyword) > maxTopics {
-		glog.Infof("Max Topics Exceeded", len(keyword))
+		glog.Infof("Max Topics Exceeded %d", len(keyword))
+		return
 	} else {
 		for _, key := range keyword {
 			glog.Infof("Publisher topic is : %s", key)
@@ -131,14 +131,10 @@ func StartPublisher() {
 }
 
 //StartSubscriber Function to start the subscriber and insert data to influxdb
-func StartSubscriber() {
+func StartSubscriber(subTopics string) {
 	var SubKeyword []string
 	InfluxObj.CnInfo = runtimeInfo
-	keywords := os.Getenv("SubTopics")
-	if len(keywords) == 0 {
-		return
-	}
-	keyword := strings.Split(keywords, ",")
+	keyword := strings.Split(subTopics, ",")
 
 	var subMgr subManager.SubManager
 	var influxWrite dbManager.InfluxWriter
@@ -152,7 +148,8 @@ func StartSubscriber() {
 	}
 	subMgr.Init()
 	if len(keyword) > maxSubTopics {
-		glog.Infof("Max SubTopics Exceeded", len(keyword))
+		glog.Infof("Max SubTopics Exceeded %d", len(keyword))
+		return
 	} else {
 		for _, key := range keyword {
 			SubKeyword = strings.Split(key, "/")
@@ -239,8 +236,18 @@ func main() {
 	done := make(chan bool)
 	readConfig()
 	StartDb()
-	StartPublisher()
-	StartSubscriber()
+	pubTopics := os.Getenv("PubTopics")
+	if pubTopics != "" {
+		StartPublisher(pubTopics)
+	} else {
+		glog.Infof("Not starting Publisher since PubTopics env is not set")
+	}
+	subTopics := os.Getenv("SubTopics")
+	if subTopics != "" {
+		StartSubscriber(subTopics)
+	} else {
+		glog.Infof("Not starting Subscriber since SubTopics env is not set")
+	}
 	go startReqReply()
 	<-done
 	cleanup()
