@@ -42,7 +42,7 @@ in docker setup. Currently "defects" key is ignored from flattening. Every key t
    tag3
  ```
 
-For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_and_MsgBus_Endpoint_Configuration](../Etcd_and_MsgBus_Endpoint_Configuration.md).
+For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secrets_and_MsgBus_Endpoint_Configuration](../Etcd_Secrets_and_MsgBus_Endpoint_Configuration.md).
 
 
 ## `Installation`
