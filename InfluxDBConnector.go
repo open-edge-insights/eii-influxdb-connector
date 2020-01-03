@@ -32,14 +32,13 @@ import (
 )
 
 const (
-	subServPort             = "61971"
-	subServHost             = "localhost"
-	influxCertPath          = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
-	influxKeyPath           = "/etc/ssl/influxdb/influxdb_server_key.pem"
-	influxCaPath            = "/etc/ssl/ca/ca_certificate.pem"
-	maxTopics               = 50
-	maxSubTopics            = 50
-	influxDBConnectorConfig = "InfluxDBConnector/ignore_attributes.cfg"
+	subServPort    = "61971"
+	subServHost    = "localhost"
+	influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
+	influxKeyPath  = "/etc/ssl/influxdb/influxdb_server_key.pem"
+	influxCaPath   = "/etc/ssl/ca/ca_certificate.pem"
+	maxTopics      = 50
+	maxSubTopics   = 50
 )
 
 var cfgMgrConfig = map[string]string{
@@ -101,18 +100,18 @@ func StartPublisher(pubTopics string) {
 	if len(keyword) > maxTopics {
 		glog.Infof("Max Topics Exceeded %d", len(keyword))
 		return
-	} else {
-		for _, key := range keyword {
-			glog.Infof("Publisher topic is : %s", key)
-			pubMgr.RegPublisherList(key)
-			cConfigList := msgbusutil.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+	}
 
-			if cConfigList != nil {
-				pubMgr.RegClientList(key)
-				pubMgr.CreateClient(key, cConfigList)
-			}
+	for _, key := range keyword {
+		glog.Infof("Publisher topic is : %s", key)
+		pubMgr.RegPublisherList(key)
+		cConfigList := msgbusutil.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
+		if cConfigList != nil {
+			pubMgr.RegClientList(key)
+			pubMgr.CreateClient(key, cConfigList)
 		}
+
 	}
 
 	pubMgr.StartAllPublishers()
@@ -142,26 +141,29 @@ func StartSubscriber(subTopics string) {
 
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
-	influxWrite.IgnoreList, err = configManager.ReadInfluxDBConnectorConfig(influxDBConnectorConfig)
+	influxdbConnectorConfig, err := configManager.ReadInfluxDBConnectorConfig(cfgMgrConfig)
 	if err != nil {
 		glog.Error("Error in creating Ignore list")
 	}
+	influxWrite.IgnoreList = influxdbConnectorConfig["ignoreList"]
+	influxWrite.TagList = influxdbConnectorConfig["tagsList"]
+
 	subMgr.Init()
 	if len(keyword) > maxSubTopics {
 		glog.Infof("Max SubTopics Exceeded %d", len(keyword))
 		return
-	} else {
-		for _, key := range keyword {
-			SubKeyword = strings.Split(key, "/")
-			glog.Infof("Subscriber topic is : %v", SubKeyword[1])
+	}
 
-			subMgr.RegSubscriberList(SubKeyword[1])
-			cConfigList := msgbusutil.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+	for _, key := range keyword {
+		SubKeyword = strings.Split(key, "/")
+		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
 
-			if cConfigList != nil {
-				subMgr.RegClientList(SubKeyword[1])
-				subMgr.CreateClient(SubKeyword[1], cConfigList)
-			}
+		subMgr.RegSubscriberList(SubKeyword[1])
+		cConfigList := msgbusutil.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+
+		if cConfigList != nil {
+			subMgr.RegClientList(SubKeyword[1])
+			subMgr.CreateClient(SubKeyword[1], cConfigList)
 		}
 	}
 

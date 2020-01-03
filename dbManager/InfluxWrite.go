@@ -15,6 +15,7 @@ package dbManager
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"reflect"
 	"strconv"
@@ -34,6 +35,7 @@ type InfluxWriter struct {
 	CnInfo      common.AppConfig
 	DbInfo      common.DbCredential
 	IgnoreList  []string
+	TagList     []string
 }
 
 func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
@@ -51,6 +53,15 @@ func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
 
 	if common.Profiling == true {
 		data["ts_idbconn_proc_entry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+	}
+
+	for key, value := range data {
+		for _, tagkey := range ir.TagList {
+			if key == tagkey {
+				tags[key] = fmt.Sprintf("%v", value)
+				delete(data, key)
+			}
+		}
 	}
 
 	flatjson, err := ir.getflatten(data, "")

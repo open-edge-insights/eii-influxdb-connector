@@ -13,12 +13,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package configManager
 
 import (
-	"bufio"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
 	configmgr "IEdgeInsights/common/libs/ConfigManager"
@@ -56,7 +55,7 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 
 	err = json.Unmarshal([]byte(value), &influx)
 	if err != nil {
-		glog.Errorf("json error:", err.Error())
+		glog.Errorf("json error: %s", err.Error())
 		return influxCred, err
 	}
 
@@ -97,7 +96,7 @@ func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 
 	err = json.Unmarshal([]byte(value), &data)
 	if err != nil {
-		glog.Errorf("json error:", err.Error())
+		glog.Errorf("json error: %s", err.Error())
 		return cInfo, err
 	}
 
@@ -141,27 +140,43 @@ func ReadCertKey(keyName string, filePath string, config map[string]string) erro
 
 // ReadInfluxDBConnectorConfig will read the file
 // and create an Ignore list
-func ReadInfluxDBConnectorConfig(filePath string) ([]string, error) {
+func ReadInfluxDBConnectorConfig(config map[string]string) (map[string][]string, error) {
 
-	file, err := os.Open(filePath)
+	data := make(map[string]interface{})
+	influxdbConnCon := make(map[string][]string)
+	mgr := configmgr.Init("etcd", config)
+	appName := os.Getenv("AppName")
+
+	value, err := mgr.GetConfig("/" + appName + "/config")
 	if err != nil {
-		glog.Errorf(err.Error())
-		glog.Errorf("Error opening %s", filePath)
-		return nil, err
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		return influxdbConnCon, err
 	}
 
-	reader := bufio.NewReader(file)
+	err = json.Unmarshal([]byte(value), &data)
+	if err != nil {
+		glog.Errorf("json error: %s", err.Error())
+		return influxdbConnCon, err
+	}
 
-	var ignoreList []string
-	var line string
-	for {
-		line, err = reader.ReadString('\n')
-		if err != nil {
-			break
+	for tags, value := range data {
+
+		if tags == "ignore_keys" {
+			if value != nil {
+				for _, keys := range value.([]interface{}) {
+					influxdbConnCon["ignoreList"] = append(influxdbConnCon["ignoreList"], fmt.Sprintf("%v", keys))
+				}
+			}
 		}
-		line = strings.TrimSuffix(line, "\n")
-		ignoreList = append(ignoreList, line)
+		if tags == "tag_keys" {
+			if value != nil {
+				for _, keys := range value.([]interface{}) {
+					influxdbConnCon["tagsList"] = append(influxdbConnCon["tagsList"], fmt.Sprintf("%v", keys))
+				}
+			}
+		}
 	}
-	glog.Infof("List of Attributes to be ignored while flatening: %v", ignoreList)
-	return ignoreList, nil
+
+	glog.Infof("Influxdbconnector configs are: %v", influxdbConnCon)
+	return influxdbConnCon, nil
 }
