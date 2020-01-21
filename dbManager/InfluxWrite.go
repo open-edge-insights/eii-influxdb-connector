@@ -223,6 +223,8 @@ func (ir *InfluxWriter) insertData(data *InfluxWriter) {
 
 	clientadmin, err := inflxUtil.CreateHTTPClient(ir.DbInfo.Host, ir.DbInfo.Port, ir.DbInfo.Username, ir.DbInfo.Password, ir.CnInfo.DevMode)
 
+	defer clientadmin.Close()
+
 	if common.Profiling == true {
 		data.Fields["ts_idbconn_http_client_ready"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 	}
