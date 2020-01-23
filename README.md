@@ -32,7 +32,7 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
 
 In case of nested json data, by default InfluxDBConnector will flatten the nested json and push
 the flat data to InfluxDB, In order to avoid the flattening of any particular nested key please mention the
-tag key in the [etcd_pre_load.json](../docker_setup/provision/config/etcd_pre_load.json) present in config directory
+tag key in the [ignore_attributes.cfg](../build/config/ignore_attributes.cfg) present in config directory
 in docker setup. Currently "defects" key is ignored from flattening. Every key to be ignored has to be in newline.
 
  for example,
@@ -62,6 +62,6 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
 
     1. Build and Run VideoAnalytics as container
         ```
-        $ cd [repo]/docker_setup
+        $ cd [repo]/build
         $ docker-compose up --build ia_influxdbconnector
         ```
