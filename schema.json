@@ -1,0 +1,61 @@
+{
+  "definitions": {},
+  "type": "object",
+  "required": [
+    "influxdb",
+    "pub_workers",
+    "sub_workers"
+  ],
+  "properties": {
+    "influxdb": {
+      "type": "object",
+      "required": [
+        "retention",
+        "username",
+        "password",
+        "dbname",
+        "ssl",
+        "verifySsl",
+        "port"
+      ],
+      "properties": {
+        "retention": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "username": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "password": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "dbname": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "ssl": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "verifySsl": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "port": {
+          "type": "string",
+          "pattern": "^(.*)$"
+        }
+      }
+    },
+    "pub_workers": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "sub_workers": {
+      "type": "string",
+      "pattern": "^(.*)$"
+    }
+  }
+}

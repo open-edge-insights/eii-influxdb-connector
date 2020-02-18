@@ -4,10 +4,10 @@
    publisher, zmq subscriber threads, and zmq request reply thread
    based on PubTopics, SubTopics and QueryTopics configuration.
 2. zmq subscriber thread connects to the PUB socket of zmq bus on which
-   the data is published by VideoAnalytics and push it to the InfluxDB 
+   the data is published by VideoAnalytics and push it to the InfluxDB
 3. zmq publisher thread will publish the point data ingested by the telegraf
    and the classifier result coming out of the point data analytics.
-4. zmq reply request service will receive the InfluxDB select query and 
+4. zmq reply request service will receive the InfluxDB select query and
    response with the historical data.
 
 ## `Configuration`
@@ -40,7 +40,7 @@ in docker setup. Currently "defects" key is ignored from flattening. Every key t
    ignore_keys = [ "Key1", "Key2", "Key3" ]
  ```
 By default, all the keys in the data schema will be pushed to InfluxDB as fields. In case if tags are present in data schema,
-it can be mentioned in the [etcd_pre_load.json](../docker_setup/provision/config/etcd_pre_load.json) then the data pushed to InfluxDB, will have fields and tags both.
+it can be mentioned in the [etcd_pre_load.json](../build/provision/config/etcd_pre_load.json) then the data pushed to InfluxDB, will have fields and tags both.
 Currently, no tags are present in the data scheme and tag_keys is kept blank in the config file.
 
 for example,

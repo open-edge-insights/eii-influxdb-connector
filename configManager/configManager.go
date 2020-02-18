@@ -13,6 +13,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package configManager
 
 import (
+	util "IEdgeInsights/common/util"
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -50,6 +52,18 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 	value, err := mgr.GetConfig("/" + appName + "/config")
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		return influxCred, err
+	}
+
+	// Reading schema json
+	schema, err := ioutil.ReadFile("./schema.json")
+	if err != nil {
+		glog.Errorf("Schema file not found")
+		return influxCred, err
+	}
+
+	// Validating config json
+	if util.ValidateJSON(string(schema), value) != true {
 		return influxCred, err
 	}
 
