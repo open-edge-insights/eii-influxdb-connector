@@ -33,6 +33,8 @@ COPY --from=common ${GO_WORK_DIR}/../EISMessageBus ${GO_WORK_DIR}/../EISMessageB
 
 COPY . ./InfluxDBConnector/
 
+RUN cp ${GO_WORK_DIR}/InfluxDBConnector/config/influxdb.conf /etc/influxdb/ && \
+    cp ${GO_WORK_DIR}/InfluxDBConnector/config/influxdb_devmode.conf /etc/influxdb/
 RUN go build -o /EIS/go/bin/InfluxDBConnector InfluxDBConnector/InfluxDBConnector.go
 ARG EIS_UID
 ARG EIS_USER_NAME
