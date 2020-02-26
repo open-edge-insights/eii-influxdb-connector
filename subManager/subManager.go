@@ -98,12 +98,12 @@ func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface, worker int)
 	for topic, sub := range subMgr.subscribers {
 		glog.Infof("Subscriber topic is: %s", topic)
 		for workerID := 0; workerID < worker; workerID++ {
-			go processMsg(sub, out, topic, workerID)
+			go processMsg(sub, out, workerID)
 		}
 	}
 }
 
-func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic string, workerID int) {
+func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, workerID int) {
 	for {
 		msg := <-sub.MessageChannel
 		// parse it get the InfluxRow object ir.
@@ -114,10 +114,11 @@ func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, topic str
 
 		bytemsg, err := json.Marshal(msg.Data)
 		if err != nil {
-			glog.Errorf("error:", err)
+			glog.Errorf("error: %s", err)
 		}
-		glog.Infof("Subscribe data received from topic: %s in subroutine %v", topic, workerID)
-		out.Write(bytemsg, topic)
+
+		glog.Infof("Subscribe data received from topic: %s in subroutine %v", msg.Name, workerID)
+		out.Write(bytemsg, msg.Name)
 	}
 }
 
