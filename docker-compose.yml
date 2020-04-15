@@ -22,7 +22,10 @@ services:
       CertType: "zmq,pem"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
-      no_proxy: ${no_proxy}
+      no_proxy: ${eis_no_proxy},${ETCD_HOST}
+      NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
+      ETCD_HOST: ${ETCD_HOST}
+      ETCD_PREFIX: ${ETCD_PREFIX}
 
       # MessageBus Endpoint Configuration
       Clients: "Visualizer,DiscoveryCreek"
@@ -44,11 +47,10 @@ services:
       point_classifier_results_cfg: "zmq_tcp,127.0.0.1:65016"
     volumes:
       - "vol_influxdb_data:/influxdata"
-      - "./config/influxdb.conf:/etc/influxdb/influxdb.conf"
-      - "./config/ignore_attributes.cfg:/EIS/go/src/IEdgeInsights/InfluxDBConnector/ignore_attributes.cfg"
-      - "./config/influxdb_devmode.conf:/etc/influxdb/influxdb_devmode.conf"
       - "vol_eis_socket:${SOCKET_DIR}"
     user: ${EIS_UID}
+    ports:
+      - "$INFLUXDB_PORT:$INFLUXDB_PORT"
     secrets:
       - ca_etcd
       - etcd_InfluxDBConnector_cert
