@@ -14,7 +14,6 @@ package configManager
 
 import (
 	util "IEdgeInsights/common/util"
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
