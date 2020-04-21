@@ -25,7 +25,7 @@ import (
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
 	configmgr "ConfigManager"
 	util "IEdgeInsights/common/util"
-	msgbusutil "IEdgeInsights/common/util/msgbusutil"
+	envconfig "EnvConfig"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -105,7 +105,7 @@ func StartPublisher(pubTopics string) {
 	for _, key := range keyword {
 		glog.Infof("Publisher topic is : %s", key)
 		pubMgr.RegPublisherList(key)
-		cConfigList := msgbusutil.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+		cConfigList := envconfig.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
 			pubMgr.RegClientList(key)
@@ -159,7 +159,7 @@ func StartSubscriber(subTopics string) {
 		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
 
 		subMgr.RegSubscriberList(SubKeyword[1])
-		cConfigList := msgbusutil.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+		cConfigList := envconfig.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 		if cConfigList != nil {
 			subMgr.RegClientList(SubKeyword[1])
@@ -179,7 +179,7 @@ func startReqReply() {
 
 	glog.Infof("Query service is : %s", keyword)
 
-	cConfigList := msgbusutil.GetMessageBusConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+	cConfigList := envconfig.GetMessageBusConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
 
 	client, err := eismsgbus.NewMsgbusClient(cConfigList)
 	if err != nil {
