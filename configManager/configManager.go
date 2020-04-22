@@ -21,7 +21,7 @@ import (
 	"strconv"
 
 	common "IEdgeInsights/InfluxDBConnector/common"
-	configmgr "IEdgeInsights/common/libs/ConfigManager"
+	configmgr "ConfigManager"
 
 	"github.com/golang/glog"
 )
@@ -46,6 +46,10 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 	var influxCred common.DbCredential
 
 	mgr := configmgr.Init("etcd", config)
+	if mgr == nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+
 	appName := os.Getenv("AppName")
 
 	value, err := mgr.GetConfig("/" + appName + "/config")
@@ -99,6 +103,10 @@ func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 
 	data := make(map[string]interface{})
 	mgr := configmgr.Init("etcd", config)
+	if mgr == nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+
 	appName := os.Getenv("AppName")
 
 	value, err := mgr.GetConfig("/" + appName + "/config")
@@ -131,6 +139,9 @@ func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 // and write to path passed as argument
 func ReadCertKey(keyName string, filePath string, config map[string]string) error {
 	mgr := configmgr.Init("etcd", config)
+	if mgr == nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
 	appName := os.Getenv("AppName")
 
 	value, err := mgr.GetConfig("/" + appName + "/" + keyName)
@@ -158,6 +169,10 @@ func ReadInfluxDBConnectorConfig(config map[string]string) (map[string][]string,
 	data := make(map[string]interface{})
 	influxdbConnCon := make(map[string][]string)
 	mgr := configmgr.Init("etcd", config)
+	if mgr == nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+
 	appName := os.Getenv("AppName")
 
 	value, err := mgr.GetConfig("/" + appName + "/config")

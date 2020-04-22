@@ -23,7 +23,7 @@ import (
 	dbManager "IEdgeInsights/InfluxDBConnector/dbManager"
 	pubManager "IEdgeInsights/InfluxDBConnector/pubManager"
 	subManager "IEdgeInsights/InfluxDBConnector/subManager"
-	configmgr "IEdgeInsights/common/libs/ConfigManager"
+	configmgr "ConfigManager"
 	util "IEdgeInsights/common/util"
 	msgbusutil "IEdgeInsights/common/util/msgbusutil"
 	"strconv"
@@ -231,7 +231,11 @@ func main() {
 	_ = configManager.ReadCertKey("ca_cert", influxCaPath, cfgMgrConfig)
 
 	// Initializing Etcd to set env variables
-	_ = configmgr.Init("etcd", cfgMgrConfig)
+	cfgMgrCli := configmgr.Init("etcd", cfgMgrConfig)
+	if cfgMgrCli == nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+
 	flag.Set("logtostderr", "true")
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
