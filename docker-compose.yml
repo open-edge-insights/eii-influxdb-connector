@@ -12,6 +12,7 @@ services:
         EIS_VERSION: ${EIS_VERSION}
         EIS_UID: ${EIS_UID}
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
+        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EIS_VERSION}
     container_name: ia_influxdbconnector
     hostname: ia_influxdbconnector
