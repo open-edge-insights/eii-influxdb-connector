@@ -1,0 +1,67 @@
+{
+    "Module" : {
+        "Name": "InfluxDBConnector",
+        "Description": "InfluxDBConnector module manifest",
+        "SchemaVersion": "0.2",
+        "ManifestFile": "${idx:influxdbconnector:$EIS_VERSION}",
+        "RunAsUser": "$EIS_UID",
+        "RunAsGroup": "$EIS_UID",
+        "Resources": {
+            "CPU": 100,
+            "MemoryMB": 100
+        },
+        "ExecutionEnv": {
+            "AppName": "InfluxDBConnector",
+            "ETCD_ENDPOINT": "${datastore.endpoint}",
+            "CONFIGMGR_CACERT": "${databucket.cacert}",
+            "CONFIGMGR_CERT": "${databucket.cert}",
+            "CONFIGMGR_KEY": "${databucket.key}",
+            "ETCD_PREFIX": "$ETCD_PREFIX",
+            "DEV_MODE": "$DEV_MODE",
+            "PROFILING_MODE": "false",
+            "ZMQ_RECV_HWM": "1000",
+            "Clients": "Visualizer",
+            "Server": "zmq_tcp,0.0.0.0:${ep.influxEISServer.localport}",
+            "SubTopics": "VideoAnalytics/camera1_stream_results",
+            "camera1_stream_results_cfg": "zmq_tcp,${ep.influxSub.remoteaddress}:${ep.influxSub.remoteport}",
+            "PubTopics": "point_data,point_classifier_results",
+            "point_data_cfg": "zmq_tcp,0.0.0.0:${ep.pointDataOutput.localport}",
+            "point_classifier_results_cfg": "zmq_tcp,0.0.0.0:${ep.pointClsOutput.localport}"
+        },
+        "Endpoints": [
+            {
+                "Name": "influxEISServer",
+                "Endtype": "server",
+                "Port": "8675",
+                "DataType": "messages",
+                "Link": "sinfluxout"
+            },
+            {
+                "Name": "influxSub",
+                "Endtype": "client",
+                "DataType": "messages"
+            },
+            {
+                "Name": "influxServer",
+                "Endtype": "server",
+                "Port": "8086",
+                "DataType": "messages",
+                "Link": "influxout"
+            },
+            {
+                "Name": "pointDataOutput",
+                "Endtype": "server",
+                "Port": "65015",
+                "DataType": "messages",
+                "Link": "pdinfluxout"
+            },
+            {
+                "Name": "pointClsOutput",
+                "Endtype": "server",
+                "Port": "65016",
+                "DataType": "messages",
+                "Link": "pcinfluxout"
+            }
+        ]
+    }
+}
