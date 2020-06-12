@@ -17,7 +17,7 @@ import (
 	"fmt"
 )
 
-func test_publisher(config map[string]interface{}, topic string) {
+func testPublisher(config map[string]interface{}, topic string) {
 	fmt.Println("-- Initializing message bus context")
 	client, err := eismsgbus.NewMsgbusClient(config)
 	if err != nil {
@@ -58,7 +58,7 @@ func test_publisher(config map[string]interface{}, topic string) {
 
 }
 
-func test_subscriber(config map[string]interface{}, topic string) {
+func testSubscriber(config map[string]interface{}, topic string) {
 	fmt.Println("-- Initializing message bus context")
 	client, err := eismsgbus.NewMsgbusClient(config)
 	if err != nil {
@@ -118,8 +118,8 @@ func main() {
 	}
 
 	done := make(chan bool)
-	go test_subscriber(subconfig, *topic)
-	go test_publisher(pubconfig, *topic)
+	go testSubscriber(subconfig, *topic)
+	go testPublisher(pubconfig, *topic)
 	<-done
 
 }

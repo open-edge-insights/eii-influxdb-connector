@@ -10,7 +10,7 @@ Explicit permissions are required to publish, distribute, sublicense, and/or sel
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package dbManager
+package dbmanager
 
 import (
 	"crypto/tls"
@@ -65,12 +65,12 @@ func (subCtx *InfluxSubCtx) httpHandlerFunc(w http.ResponseWriter, req *http.Req
 		glog.Errorf("Error in reading the data: %v", err)
 	}
 
-	var ts_temp1, ts_temp2 int64
+	var tsTemp1, tsTemp2 int64
 
 	if common.Profiling == true {
 		temp := strings.Fields(string(reqBody))
-		ts_temp1 = time.Now().UnixNano() / 1e6
-		fields := temp[1] + ",ts_idbconn_pub_entry=" + strconv.FormatInt(ts_temp1, 10)
+		tsTemp1 = time.Now().UnixNano() / 1e6
+		fields := temp[1] + ",ts_idbconn_pub_entry=" + strconv.FormatInt(tsTemp1, 10)
 		reqBody = []byte(temp[0] + " " + fields + " " + temp[2])
 	}
 
@@ -82,9 +82,9 @@ func (subCtx *InfluxSubCtx) httpHandlerFunc(w http.ResponseWriter, req *http.Req
 	if common.Profiling == true {
 		//glog.Infof("reqBody is %v", string(reqBody))
 		temp := strings.Fields(string(reqBody))
-		ts_temp2 = time.Now().UnixNano() / 1e6
-		diff := ts_temp2 - ts_temp1
-		fields := temp[1] + ",ts_idbconn_pub_queue_entry=" + strconv.FormatInt(ts_temp2, 10)
+		tsTemp2 = time.Now().UnixNano() / 1e6
+		diff := tsTemp2 - tsTemp1
+		fields := temp[1] + ",ts_idbconn_pub_queue_entry=" + strconv.FormatInt(tsTemp2, 10)
 		fields += ",ts_idbconn_influx_respose_write=" + strconv.FormatInt(diff, 10)
 		reqBody = []byte(temp[0] + " " + fields + " " + temp[2])
 		//glog.Infof("modified reqBody is %v", string(reqBody))
@@ -156,13 +156,13 @@ func (subCtx *InfluxSubCtx) startServer(devMode bool) {
 
 		// Create  a Server instance to listen on port 61971 with the TLS config
 		server := &http.Server{
-			Addr:      			dstAddr,
-			ReadTimeout:    	60 * time.Second,
-			ReadHeaderTimeout:  60 * time.Second,
-			WriteTimeout:    	60 * time.Second,
-			IdleTimeout:    	60 * time.Second,
-			TLSConfig: 			tlsConfig,
-			MaxHeaderBytes: 	1 << 20,
+			Addr:              dstAddr,
+			ReadTimeout:       60 * time.Second,
+			ReadHeaderTimeout: 60 * time.Second,
+			WriteTimeout:      60 * time.Second,
+			IdleTimeout:       60 * time.Second,
+			TLSConfig:         tlsConfig,
+			MaxHeaderBytes:    1 << 20,
 		}
 		err = server.ListenAndServeTLS(influxCertPath, influxKeyPath)
 

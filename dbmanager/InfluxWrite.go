@@ -10,7 +10,7 @@ Explicit permissions are required to publish, distribute, sublicense, and/or sel
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package dbManager
+package dbmanager
 
 import (
 	"encoding/json"
@@ -52,7 +52,7 @@ func (ir *InfluxWriter) parseData(msg []byte, topic string) *InfluxWriter {
 	}
 
 	if common.Profiling == true {
-		data["ts_idbconn_proc_entry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+		data["tsIdbconnProcEntry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 	}
 
 	for key, value := range data {
@@ -229,7 +229,7 @@ func matchkey(ignorelist []string, value string) bool {
 func (ir *InfluxWriter) insertData(data *InfluxWriter) {
 
 	if common.Profiling == true {
-		data.Fields["ts_idbconn_http_entry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+		data.Fields["tsIdbconnHTTPEntry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 	}
 
 	clientadmin, err := inflxUtil.CreateHTTPClient(ir.DbInfo.Host, ir.DbInfo.Port, ir.DbInfo.Username, ir.DbInfo.Password, ir.CnInfo.DevMode)
@@ -237,7 +237,7 @@ func (ir *InfluxWriter) insertData(data *InfluxWriter) {
 	defer clientadmin.Close()
 
 	if common.Profiling == true {
-		data.Fields["ts_idbconn_http_client_ready"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+		data.Fields["tsIdbconnHTTPClientReady"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 	}
 
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
@@ -258,7 +258,7 @@ func (ir *InfluxWriter) insertData(data *InfluxWriter) {
 	bp.AddPoint(pt)
 
 	if common.Profiling == true {
-		data.Fields["ts_idbconn_http_batchpoint_ready"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+		data.Fields["tsIdbconnHTTPBatchpointReady"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 	}
 
 	if err := clientadmin.Write(bp); err != nil {
@@ -266,26 +266,26 @@ func (ir *InfluxWriter) insertData(data *InfluxWriter) {
 	}
 
 	if common.Profiling == true {
-		ts_idbconn_exit := (time.Now().UnixNano() / 1e6)
+		tsIdbconnExit := (time.Now().UnixNano() / 1e6)
 
-		ts_idbconn_http_entry, _ := strconv.ParseInt(data.Fields["ts_idbconn_http_entry"].(string), 10, 64)
-		ts_idbconn_proc_entry, _ := strconv.ParseInt(data.Fields["ts_idbconn_proc_entry"].(string), 10, 64)
-		ts_idbconn_entry, _ := strconv.ParseInt(data.Fields["ts_idbconn_entry"].(string), 10, 64)
-		ts_idbconn_http_client_ready, _ := strconv.ParseInt(data.Fields["ts_idbconn_http_client_ready"].(string), 10, 64)
-		ts_idbconn_http_batchpoint_ready, _ := strconv.ParseInt(data.Fields["ts_idbconn_http_batchpoint_ready"].(string), 10, 64)
+		tsIdbconnHTTPEntry, _ := strconv.ParseInt(data.Fields["tsIdbconnHTTPEntry"].(string), 10, 64)
+		tsIdbconnProcEntry, _ := strconv.ParseInt(data.Fields["tsIdbconnProcEntry"].(string), 10, 64)
+		tsIdbconnEntry, _ := strconv.ParseInt(data.Fields["tsIdbconnEntry"].(string), 10, 64)
+		tsIdbconnHTTPClientReady, _ := strconv.ParseInt(data.Fields["tsIdbconnHTTPClientReady"].(string), 10, 64)
+		tsIdbconnHTTPBatchpointReady, _ := strconv.ParseInt(data.Fields["tsIdbconnHTTPBatchpointReady"].(string), 10, 64)
 
-		tm_idbconn_http_proc := ts_idbconn_exit - ts_idbconn_http_entry
-		tm_idbconn_json_proc := ts_idbconn_proc_entry - ts_idbconn_http_entry
-		tm_latency_at_influxdbconnector := ts_idbconn_exit - ts_idbconn_entry
-		tm_http_client_creation := ts_idbconn_http_client_ready - ts_idbconn_http_entry
-		tm_batchpoint_ready := ts_idbconn_http_batchpoint_ready - ts_idbconn_http_client_ready
+		tmIdbconnHTTPProc := tsIdbconnExit - tsIdbconnHTTPEntry
+		tmIdbconnJSONProc := tsIdbconnProcEntry - tsIdbconnHTTPEntry
+		tmLatencyAtInfluxdbconnector := tsIdbconnExit - tsIdbconnEntry
+		tmHTTPClientCreation := tsIdbconnHTTPClientReady - tsIdbconnHTTPEntry
+		tmBatchpointReady := tsIdbconnHTTPBatchpointReady - tsIdbconnHTTPClientReady
 
 		glog.Infof("======Start=====")
-		glog.Infof("Lattency:%v", tm_latency_at_influxdbconnector)
-		glog.Infof("ts_idbconn_http_proc:%v", tm_idbconn_http_proc)
-		glog.Infof("ts_idbconn_json_proc:%v", tm_idbconn_json_proc)
-		glog.Infof("tm_http_client_creation:%v", tm_http_client_creation)
-		glog.Infof("tm_batchpoint_ready:%v", tm_batchpoint_ready)
+		glog.Infof("Lattency:%v", tmLatencyAtInfluxdbconnector)
+		glog.Infof("ts_idbconn_http_proc:%v", tmIdbconnHTTPProc)
+		glog.Infof("ts_idbconn_json_proc:%v", tmIdbconnJSONProc)
+		glog.Infof("tmHTTPClientCreation:%v", tmHTTPClientCreation)
+		glog.Infof("tmBatchpointReady:%v", tmBatchpointReady)
 
 		glog.Infof("======End=====")
 	}

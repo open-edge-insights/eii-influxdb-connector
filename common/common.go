@@ -75,4 +75,5 @@ type SubEndPoint struct {
 	Measurement string
 }
 
+// Profiling variable
 var Profiling bool = false

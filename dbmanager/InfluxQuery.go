@@ -10,7 +10,7 @@ Explicit permissions are required to publish, distribute, sublicense, and/or sel
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package dbManager
+package dbmanager
 
 import (
 	"encoding/json"
@@ -50,21 +50,23 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 			Precision: "s",
 		}
 
-		if response, err := clientadmin.Query(q); err == nil && response.Error() == nil {
+		if response, err := clientadmin.Query(q); err == nil {
 
-			if len(response.Results[0].Series) > 0 {
-				output := response.Results[0].Series[0]
-				glog.V(1).Infof("%v", output)
-				Output, err := json.Marshal(output)
-				response := types.NewMsgEnvelope(map[string]interface{}{"Data": string(Output)}, nil)
-				return response, err
+			if response.Error() != nil {
+				glog.V(1).Infof("Response received: %v", response)
+				glog.V(1).Infof("Response Error received: %v", response.Error())
+			} else {
+				if len(response.Results[0].Series) > 0 {
+					output := response.Results[0].Series[0]
+					glog.V(1).Infof("%v", output)
+					Output, err := json.Marshal(output)
+					response := types.NewMsgEnvelope(map[string]interface{}{"Data": string(Output)}, nil)
+					return response, err
+				}
+				val := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, nil)
+				err = errors.New("Response is nil")
+				return val, err
 			}
-			val := types.NewMsgEnvelope(map[string]interface{}{"Data": ""}, nil)
-			err = errors.New("Response is nil")
-			return val, err
-		} else {
-			glog.V(1).Infof("%v", response)
-			glog.V(1).Infof("%v", response.Error())
 		}
 
 	}
@@ -73,6 +75,7 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 	return val, err
 }
 
+// Init function to check if select query is passed
 func (iq *InfluxQuery) Init() {
 	iq.queryValidator = regexp.MustCompile(`^(select|SELECT)`)
 }
