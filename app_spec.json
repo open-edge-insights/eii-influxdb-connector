@@ -19,14 +19,15 @@
             "ETCD_PREFIX": "$ETCD_PREFIX",
             "DEV_MODE": "$DEV_MODE",
             "PROFILING_MODE": "false",
-            "ZMQ_RECV_HWM": "1000",
-            "Clients": "Visualizer",
+            "ZMQ_RECV_HWM": "50",
+            "Clients": "DiscoveryCreek,OpcuaExport,RestDataExport",
             "Server": "zmq_tcp,0.0.0.0:${ep.influxEISServer.localport}",
-            "SubTopics": "VideoAnalytics/camera1_stream_results",
+            "SubTopics": "VideoAnalytics/camera1_stream_results,DiscoveryCreek/dc_point_data_results",
             "camera1_stream_results_cfg": "zmq_tcp,${ep.influxSub.remoteaddress}:${ep.influxSub.remoteport}",
             "PubTopics": "point_data,point_classifier_results",
             "point_data_cfg": "zmq_tcp,0.0.0.0:${ep.pointDataOutput.localport}",
-            "point_classifier_results_cfg": "zmq_tcp,0.0.0.0:${ep.pointClsOutput.localport}"
+            "point_classifier_results_cfg": "zmq_tcp,0.0.0.0:${ep.pointClsOutput.localport}",
+	    "dc_point_data_results_cfg": "zmq_tcp,${ep.influxDcSub.remoteaddress}:${ep.influxDcSub.remoteport}"
         },
         "Endpoints": [
             {
@@ -61,6 +62,12 @@
                 "Port": "65016",
                 "DataType": "messages",
                 "Link": "pcinfluxout"
+            },
+            {
+                "Name": "influxDcSub",
+                "Endtype": "client",
+                "DataType": "messages",
+                "Link": "dc-output"
             }
         ]
     }
