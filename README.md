@@ -65,3 +65,7 @@ For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secr
         $ cd [repo]/build
         $ docker-compose up --build ia_influxdbconnector
         ```
+
+  > **Note:**
+  > * Whenever credentials are changed for influxdb, "[${EIS_INSTALL_PATH}](../build/.env#L18)/data" 
+      directory need to be deleted.
