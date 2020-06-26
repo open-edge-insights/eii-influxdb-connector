@@ -11,5 +11,6 @@
     "pub_workers": "5",
     "sub_workers": "5",
     "ignore_keys": [ "defects" ],
-    "tag_keys": []
+    "tag_keys": [],
+    "blacklist_query": ["CREATE","DROP","DELETE","ALTER","<script>"]
 }

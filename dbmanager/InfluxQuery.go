@@ -23,25 +23,40 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"
+	"strings"
 )
 
 // InfluxQuery structure
 type InfluxQuery struct {
 	CnInfo         common.AppConfig
 	DbInfo         common.DbCredential
-	queryValidator *regexp.Regexp
+	queryWhitelistValidator *regexp.Regexp
+	queryBlacklistValidator *regexp.Regexp
+	QueryListcon map[string][]string
 }
 
-// QueryInflux will execute the select command and
+// QueryInflux will block the blacklist queries, execute the select command and
 // return the response
 func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, error) {
+	var validQuery bool
+	var invalidQuery bool
 	clientadmin, err := inflxUtil.CreateHTTPClient(iq.DbInfo.Host, iq.DbInfo.Port, iq.DbInfo.Username, iq.DbInfo.Password, iq.CnInfo.DevMode)
 
 	if err != nil {
 		glog.Errorf("client error %s", err)
 	}
 	Command, ok := msg.Data["command"].(string)
-	validQuery := iq.queryValidator.MatchString(Command)
+	Command_Lower := strings.ToLower(Command)
+	if len(iq.QueryListcon) == 0 {
+		invalidQuery = false
+	} else {
+		invalidQuery = iq.queryBlacklistValidator.MatchString(Command_Lower)
+	}
+	if !invalidQuery {
+		validQuery = iq.queryWhitelistValidator.MatchString(Command_Lower)
+	} else {
+		glog.Infof("Query is blacklisted")
+	}
 
 	if ok && validQuery {
 		q := client.Query{
@@ -75,7 +90,24 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 	return val, err
 }
 
-// Init function to check if select query is passed
+
+
+// Init function to check if select query is passed and forming regular expression for black list queries.
 func (iq *InfluxQuery) Init() {
-	iq.queryValidator = regexp.MustCompile(`^(select|SELECT)`)
+	var blacklist string
+
+	for _,value := range iq.QueryListcon["BlacklistQueryList"] {
+		value = strings.ToLower(value)
+		// Regex is used for matching the query containing elements of Blacklist QueryList.Here '\s+' is used to match one or more whitespace charecter
+                // and '.*' is used to match zero or more number of any characters. '^' signifies start of the line and '$' signifies end of the line.
+		blacklistexp := "^(" + value + "\\s+.*)|(.*\\s+" + value + "\\s+.*)|(.*\\s+" + value + "$)|^(" + value + "$)|(.*;" + value + "\\s+.*)|(.*;" + value + "$)"
+		if len(strings.TrimSpace(blacklist)) == 0 {
+			blacklist += blacklistexp
+		} else {
+			blacklist += "|" + blacklistexp
+		}
+	}
+
+	iq.queryBlacklistValidator = regexp.MustCompile("(" + blacklist + ")")
+	iq.queryWhitelistValidator = regexp.MustCompile("^(select\\s+.*)")
 }

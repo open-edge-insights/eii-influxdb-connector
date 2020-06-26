@@ -4,7 +4,8 @@
   "required": [
     "influxdb",
     "pub_workers",
-    "sub_workers"
+    "sub_workers",
+    "blacklist_query"
   ],
   "properties": {
     "influxdb": {
@@ -56,6 +57,9 @@
     "sub_workers": {
       "type": "string",
       "pattern": "^(.*)$"
+    },
+    "blacklist_query": {
+      "type": "array"
     }
   }
 }

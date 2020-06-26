@@ -208,3 +208,46 @@ func ReadInfluxDBConnectorConfig(config map[string]string) (map[string][]string,
 	glog.Infof("Influxdbconnector configs are: %v", influxdbConnCon)
 	return influxdbConnCon, nil
 }
+
+
+// ReadInfluxDBQueryConfig will read the file
+// and create a Blacklist QueryList
+func ReadInfluxDBQueryConfig(config map[string]string) (map[string][]string, error) {
+
+	data := make(map[string]interface{})
+	influxdbQuerycon := make(map[string][]string)
+	mgr := configmgr.Init("etcd", config)
+	if mgr == nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+
+	appName := os.Getenv("AppName")
+
+	value, err := mgr.GetConfig("/" + appName + "/config")
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		return influxdbQuerycon, err
+	}
+
+	err = json.Unmarshal([]byte(value), &data)
+	if err != nil {
+		glog.Errorf("json error: %s", err.Error())
+		return influxdbQuerycon, err
+	}
+
+
+	for tags, value := range data {
+
+		// parsing the config to fetch required value
+		if tags == "blacklist_query" {
+			if value != nil {
+				for _, keys := range value.([]interface{}) {
+					influxdbQuerycon["BlacklistQueryList"] = append(influxdbQuerycon["BlacklistQueryList"], fmt.Sprintf("%v", keys))
+				}
+			}
+		}
+	}
+
+	glog.Infof("Influxdb query configs are: %v", influxdbQuerycon)
+	return influxdbQuerycon, nil
+}

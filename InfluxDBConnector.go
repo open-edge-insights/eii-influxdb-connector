@@ -195,8 +195,13 @@ func startReqReply() {
 	var influxQuery dbManager.InfluxQuery
 	influxQuery.DbInfo = credConfig
 	influxQuery.CnInfo = runtimeInfo
-	influxQuery.Init()
+	influxdbQueryconfig, err := configManager.ReadInfluxDBQueryConfig(cfgMgrConfig)
+	if err != nil {
+		glog.Error("Error in creating query list")
+	}
+	influxQuery.QueryListcon = influxdbQueryconfig
 
+	influxQuery.Init()
 	flag := true
 
 	for flag {
