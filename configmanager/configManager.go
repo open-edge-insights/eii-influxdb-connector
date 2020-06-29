@@ -20,8 +20,8 @@ import (
 	"os"
 	"strconv"
 
-	common "IEdgeInsights/InfluxDBConnector/common"
 	configmgr "ConfigManager"
+	common "IEdgeInsights/InfluxDBConnector/common"
 
 	"github.com/golang/glog"
 )

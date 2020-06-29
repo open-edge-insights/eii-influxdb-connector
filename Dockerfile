@@ -83,6 +83,6 @@ RUN apt-get remove -y wget && \
     apt-get autoremove -y
 
 COPY schema.json .
-
-ENTRYPOINT ["InfluxDBConnector"]
+COPY startup.sh .
+ENTRYPOINT ["./startup.sh"]
 

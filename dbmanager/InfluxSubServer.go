@@ -36,9 +36,9 @@ type InfluxSubCtx struct {
 
 const (
 	maxPointsBuffered = 100
-	influxCaPath      = "/etc/ssl/ca/ca_certificate.pem"
-	influxCertPath    = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
-	influxKeyPath     = "/etc/ssl/influxdb/influxdb_server_key.pem"
+	influxCaPath      = "/tmp/influxdb/ssl/ca_certificate.pem"
+	influxCertPath    = "/tmp/influxdb/ssl/influxdb_server_certificate.pem"
+	influxKeyPath     = "/tmp/influxdb/ssl/influxdb_server_key.pem"
 )
 
 func (subCtx *InfluxSubCtx) handlePointData(workerID int) {

@@ -23,9 +23,13 @@
 # to debug uncomment below line
 # set -x
 
-# Starting influxdb service
-if [ "$1" = "dev_mode" ]; then
-    influxd -config /etc/influxdb/influxdb_devmode.conf &> /tmp/influxdb/log/influxd.log &
+# Starting influxDbConnector service
+
+if [ "$DEV_MODE" = "true" ]; then
+    mkdir -p /tmp/influxdb/log
 else
-    influxd -config /etc/influxdb/influxdb.conf &> /tmp/influxdb/log/influxd.log &
+    mkdir -p /tmp/influxdb/ssl
+    mkdir -p /tmp/influxdb/log
 fi
+
+InfluxDBConnector

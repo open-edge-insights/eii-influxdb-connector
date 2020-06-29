@@ -17,15 +17,15 @@ import (
 	"os"
 	"strings"
 
+	configmgr "ConfigManager"
 	eismsgbus "EISMessageBus/eismsgbus"
+	envconfig "EnvConfig"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	configManager "IEdgeInsights/InfluxDBConnector/configmanager"
 	dbManager "IEdgeInsights/InfluxDBConnector/dbmanager"
 	pubManager "IEdgeInsights/InfluxDBConnector/pubmanager"
 	subManager "IEdgeInsights/InfluxDBConnector/submanager"
-	configmgr "ConfigManager"
 	util "IEdgeInsights/common/util"
-	envconfig "EnvConfig"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -34,9 +34,9 @@ import (
 const (
 	subServPort    = "61971"
 	subServHost    = "localhost"
-	influxCertPath = "/etc/ssl/influxdb/influxdb_server_certificate.pem"
-	influxKeyPath  = "/etc/ssl/influxdb/influxdb_server_key.pem"
-	influxCaPath   = "/etc/ssl/ca/ca_certificate.pem"
+	influxCertPath = "/tmp/influxdb/ssl/influxdb_server_certificate.pem"
+	influxKeyPath  = "/tmp/influxdb/ssl/influxdb_server_key.pem"
+	influxCaPath   = "/tmp/influxdb/ssl/ca_certificate.pem"
 	maxTopics      = 50
 	maxSubTopics   = 50
 )
