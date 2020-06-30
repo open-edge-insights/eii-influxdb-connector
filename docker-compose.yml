@@ -49,7 +49,7 @@ services:
       ETCD_PREFIX: ${ETCD_PREFIX}
 
       # MessageBus Endpoint Configuration
-      Clients: "Visualizer,DiscoveryCreek"
+      Clients: "Visualizer,DiscoveryCreek,OpcuaExport,RestDataExport"
       Server: "zmq_tcp,127.0.0.1:8675"
       # Server: "zmq_ipc,${SOCKET_DIR}/"
       INFLUXDB_TLS_CIPHERS: ${TLS_CIPHERS}
