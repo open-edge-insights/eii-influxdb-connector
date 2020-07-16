@@ -45,22 +45,22 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 	if err != nil {
 		glog.Errorf("client error %s", err)
 	}
-	Command, ok := msg.Data["command"].(string)
-	Command_Lower := strings.ToLower(Command)
+	command, ok := msg.Data["command"].(string)
+	cmdL := strings.ToLower(command)
 	if len(iq.QueryListcon) == 0 {
 		invalidQuery = false
 	} else {
-		invalidQuery = iq.queryBlacklistValidator.MatchString(Command_Lower)
+		invalidQuery = iq.queryBlacklistValidator.MatchString(cmdL)
 	}
 	if !invalidQuery {
-		validQuery = iq.queryWhitelistValidator.MatchString(Command_Lower)
+		validQuery = iq.queryWhitelistValidator.MatchString(cmdL)
 	} else {
 		glog.Infof("Query is blacklisted")
 	}
 
 	if ok && validQuery {
 		q := client.Query{
-			Command:   Command,
+			Command:   command,
 			Database:  iq.DbInfo.Database,
 			Precision: "s",
 		}

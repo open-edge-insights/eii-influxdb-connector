@@ -198,6 +198,7 @@ func startReqReply() {
 	influxdbQueryconfig, err := configManager.ReadInfluxDBQueryConfig(cfgMgrConfig)
 	if err != nil {
 		glog.Error("Error in creating query list")
+		os.Exit(-1)
 	}
 	influxQuery.QueryListcon = influxdbQueryconfig
 
