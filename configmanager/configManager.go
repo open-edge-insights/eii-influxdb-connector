@@ -248,6 +248,6 @@ func ReadInfluxDBQueryConfig(config map[string]string) (map[string][]string, err
 		}
 	}
 
-	glog.Infof("Influxdb query configs are: %v", influxdbQuerycon)
+	glog.Infof("Successfully read black listed item in query")
 	return influxdbQuerycon, nil
 }
