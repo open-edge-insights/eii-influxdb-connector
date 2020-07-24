@@ -34,6 +34,7 @@ services:
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     read_only: true
+    ipc: "none"
     image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EIS_VERSION}
     container_name: ia_influxdbconnector
     hostname: ia_influxdbconnector
