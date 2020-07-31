@@ -109,7 +109,7 @@ func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, workerID 
 		// parse it get the InfluxRow object ir.
 
 		if common.Profiling == true {
-			msg.Data["ts_idbconn_entry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+			msg.Data["tsIdbconnEntry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
 		}
 
 		bytemsg, err := json.Marshal(msg.Data)
