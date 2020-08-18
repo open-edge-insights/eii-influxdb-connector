@@ -49,23 +49,3 @@ for example,
 ```
 
 For more details on Etcd and MessageBus endpoint configuration, visit [Etcd_Secrets_and_MsgBus_Endpoint_Configuration](../Etcd_Secrets_and_MsgBus_Endpoint_Configuration.md).
-
-
-## `Installation`
-
-* Follow [provision/README.md](../README#provision-eis.md) for EIS provisioning
-  if not done already as part of EIS stack setup
-
-* Run InfluxDBConnector
-
-  Present working directory to try out below commands is: `[repo]/InfluxDBConnector`
-
-    1. Build and Run VideoAnalytics as container
-        ```
-        $ cd [repo]/build
-        $ docker-compose up --build ia_influxdbconnector
-        ```
-
-  > **Note:**
-  > * Whenever credentials are changed for influxdb, "[${EIS_INSTALL_PATH}](../build/.env#L18)/data" 
-      directory need to be deleted.
