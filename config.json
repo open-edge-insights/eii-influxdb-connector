@@ -1,16 +1,19 @@
 {
-    "influxdb": {
-        "retention": "1h30m5s",
-        "username": "admin",
-        "password": "admin123",
-        "dbname": "datain",
-        "ssl": "True",
-        "verifySsl": "False",
-        "port": "8086"
+    "/InfluxDBConnector/config": {
+        "influxdb": {
+            "retention": "1h30m5s",
+            "username": "admin",
+            "password": "admin123",
+            "dbname": "datain",
+            "ssl": "True",
+            "verifySsl": "False",
+            "port": "8086"
+        },
+        "pub_workers": "5",
+        "sub_workers": "5",
+        "ignore_keys": [ "defects" ],
+        "tag_keys": [],
+        "blacklist_query": ["CREATE","DROP","DELETE","ALTER","<script>"]
     },
-    "pub_workers": "5",
-    "sub_workers": "5",
-    "ignore_keys": [ "defects" ],
-    "tag_keys": [],
-    "blacklist_query": ["CREATE","DROP","DELETE","ALTER","<script>"]
+    "/InfluxDBConnector/interfaces": {}
 }
