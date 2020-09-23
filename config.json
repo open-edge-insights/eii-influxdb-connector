@@ -1,5 +1,5 @@
 {
-    "/InfluxDBConnector/config": {
+    "config": {
         "influxdb": {
             "retention": "1h30m5s",
             "username": "admin",
@@ -15,5 +15,5 @@
         "tag_keys": [],
         "blacklist_query": ["CREATE","DROP","DELETE","ALTER","<script>"]
     },
-    "/InfluxDBConnector/interfaces": {}
+    "interfaces": {}
 }
