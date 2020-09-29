@@ -17,10 +17,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"strconv"
 
-	configmgr "ConfigManager"
+	eiscfgmgr "ConfigMgr/eisconfigmgr"
 	common "IEdgeInsights/InfluxDBConnector/common"
 
 	"github.com/golang/glog"
@@ -41,23 +40,25 @@ type InfluxConfig struct {
 
 // ReadInfluxConfig will read the influxdb configuration
 // from the json file
-func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
+func ReadInfluxConfig() (common.DbCredential, error) {
 	var influx InfluxConfig
 	var influxCred common.DbCredential
-
-	mgr := configmgr.Init("etcd", config)
-	if mgr == nil {
+	config_mgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
 
-	appName := os.Getenv("AppName")
+	appName, err := config_mgr.GetAppName()
+	if err != nil {
+		glog.Fatalf("Not able to read appname from etcd")
+	}
 
-	value, err := mgr.GetConfig("/" + appName + "/config")
+	data, err := config_mgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxCred, err
 	}
-
+	value, _ := json.Marshal(data)
 	// Reading schema json
 	schema, err := ioutil.ReadFile("./schema.json")
 	if err != nil {
@@ -66,10 +67,9 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 	}
 
 	// Validating config json
-	if util.ValidateJSON(string(schema), value) != true {
+	if util.ValidateJSON(string(schema), string(value)) != true {
 		return influxCred, err
 	}
-
 	err = json.Unmarshal([]byte(value), &influx)
 	if err != nil {
 		glog.Errorf("json error: %s", err.Error())
@@ -90,34 +90,30 @@ func ReadInfluxConfig(config map[string]string) (common.DbCredential, error) {
 
 // ReadContainerInfo will read the environment variable
 // for the subworkers, pubworkers and DEV mode info
-func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
+func ReadContainerInfo() (common.AppConfig, error) {
 
 	var cInfo common.AppConfig
 	var err error
-	devMode := os.Getenv("DEV_MODE")
-	cInfo.DevMode, err = strconv.ParseBool(devMode)
+	config_mgr, err := eiscfgmgr.ConfigManager()
 	if err != nil {
-		glog.Errorf("Fail to read DEV_MODE environment variable: %v", err)
-		return cInfo, err
-	}
-
-	data := make(map[string]interface{})
-	mgr := configmgr.Init("etcd", config)
-	if mgr == nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
-
-	appName := os.Getenv("AppName")
-
-	value, err := mgr.GetConfig("/" + appName + "/config")
+	devMode, err := config_mgr.IsDevMode()
+	cInfo.DevMode = devMode
 	if err != nil {
-		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		glog.Errorf("Fail to read DEV_MODE from etcd: %v", err)
 		return cInfo, err
 	}
 
-	err = json.Unmarshal([]byte(value), &data)
+
+	appName, err := config_mgr.GetAppName()
 	if err != nil {
-		glog.Errorf("json error: %s", err.Error())
+		glog.Fatalf("Not able to read appname from etcd")
+	}
+
+	data, err := config_mgr.GetAppConfig()
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return cInfo, err
 	}
 
@@ -137,18 +133,29 @@ func ReadContainerInfo(config map[string]string) (common.AppConfig, error) {
 
 // ReadCertKey will read the certificate from etcd
 // and write to path passed as argument
-func ReadCertKey(keyName string, filePath string, config map[string]string) error {
-	mgr := configmgr.Init("etcd", config)
-	if mgr == nil {
+func ReadCertKey(keyName string, filePath string) error {
+	config_mgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
-	appName := os.Getenv("AppName")
 
-	value, err := mgr.GetConfig("/" + appName + "/" + keyName)
+	appName, err := config_mgr.GetAppName()
+	if err != nil {
+		glog.Fatalf("Not able to read appname from etcd")
+	}
+
+	data, err := config_mgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for / %v / %v", appName, keyName)
 		return err
 	}
+
+	value := fmt.Sprintf("%v", data[keyName])
+	if err != nil {
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
+		return err
+	}
+
 	if filePath != "" {
 		err = ioutil.WriteFile(filePath, []byte(value), 0644)
 		if err != nil {
@@ -164,26 +171,21 @@ func ReadCertKey(keyName string, filePath string, config map[string]string) erro
 
 // ReadInfluxDBConnectorConfig will read the file
 // and create an Ignore list
-func ReadInfluxDBConnectorConfig(config map[string]string) (map[string][]string, error) {
-
-	data := make(map[string]interface{})
+func ReadInfluxDBConnectorConfig() (map[string][]string, error) {
 	influxdbConnCon := make(map[string][]string)
-	mgr := configmgr.Init("etcd", config)
-	if mgr == nil {
+	config_mgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
 
-	appName := os.Getenv("AppName")
-
-	value, err := mgr.GetConfig("/" + appName + "/config")
+	appName, err := config_mgr.GetAppName()
 	if err != nil {
-		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
-		return influxdbConnCon, err
+		glog.Fatalf("Not able to read appname from etcd")
 	}
 
-	err = json.Unmarshal([]byte(value), &data)
+	data, err := config_mgr.GetAppConfig()
 	if err != nil {
-		glog.Errorf("json error: %s", err.Error())
+		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxdbConnCon, err
 	}
 
@@ -212,29 +214,24 @@ func ReadInfluxDBConnectorConfig(config map[string]string) (map[string][]string,
 
 // ReadInfluxDBQueryConfig will read the file
 // and create a Blacklist QueryList
-func ReadInfluxDBQueryConfig(config map[string]string) (map[string][]string, error) {
+func ReadInfluxDBQueryConfig() (map[string][]string, error) {
 
-	data := make(map[string]interface{})
 	influxdbQuerycon := make(map[string][]string)
-	mgr := configmgr.Init("etcd", config)
-	if mgr == nil {
+	config_mgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
 
-	appName := os.Getenv("AppName")
+	appName, err := config_mgr.GetAppName()
+	if err != nil {
+		glog.Fatalf("Not able to read appname from etcd")
+	}
 
-	value, err := mgr.GetConfig("/" + appName + "/config")
+	data, err := config_mgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxdbQuerycon, err
 	}
-
-	err = json.Unmarshal([]byte(value), &data)
-	if err != nil {
-		glog.Errorf("json error: %s", err.Error())
-		return influxdbQuerycon, err
-	}
-
 
 	for tags, value := range data {
 

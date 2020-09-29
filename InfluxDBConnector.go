@@ -15,17 +15,14 @@ package main
 import (
 	"flag"
 	"os"
-	"strings"
-
-	configmgr "ConfigManager"
+	
+	eiscfgmgr "ConfigMgr/eisconfigmgr"
 	eismsgbus "EISMessageBus/eismsgbus"
-	envconfig "EnvConfig"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	configManager "IEdgeInsights/InfluxDBConnector/configmanager"
 	dbManager "IEdgeInsights/InfluxDBConnector/dbmanager"
 	pubManager "IEdgeInsights/InfluxDBConnector/pubmanager"
 	subManager "IEdgeInsights/InfluxDBConnector/submanager"
-	util "IEdgeInsights/common/util"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -41,11 +38,6 @@ const (
 	maxSubTopics   = 50
 )
 
-var cfgMgrConfig = map[string]string{
-	"certFile":  "",
-	"keyFile":   "",
-	"trustFile": "",
-}
 
 // InfluxObj is an object for InfluxDB Manager
 var InfluxObj dbManager.InfluxDBManager
@@ -58,13 +50,13 @@ var runtimeInfo common.AppConfig
 func readConfig() {
 	var errConfig error
 	var errRuntimeInfo error
-	credConfig, errConfig = configManager.ReadInfluxConfig(cfgMgrConfig)
+	credConfig, errConfig = configManager.ReadInfluxConfig()
 	if errConfig != nil {
 		glog.Error("Error in reading the DB credentials : %v" + errConfig.Error())
 		os.Exit(-1)
 	}
 
-	runtimeInfo, errRuntimeInfo = configManager.ReadContainerInfo(cfgMgrConfig)
+	runtimeInfo, errRuntimeInfo = configManager.ReadContainerInfo()
 	if errRuntimeInfo != nil {
 		glog.Error("Error in reading the Runtime Info : %v" + errRuntimeInfo.Error())
 		os.Exit(-1)
@@ -91,25 +83,45 @@ func StartDb() {
 
 // StartPublisher function to register the publisher and subscribe to influxdb
 // ZeroMQ interface
-func StartPublisher(pubTopics string) {
 
+func StartPublisher() {
 	InfluxObj.CnInfo = runtimeInfo
-	keyword := strings.Split(pubTopics, ",")
+	configMgr, err := eiscfgmgr.ConfigManager()
+
+	if err != nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+	numOfPublishers, err := configMgr.GetNumPublishers()
+	if(err != nil) {
+		glog.Errorf("Error occured with error:%v", err)
+		return
+	}
 	pubMgr.Init()
 	pubMgr.RegFilter(&InfluxObj)
-	if len(keyword) > maxTopics {
-		glog.Infof("Max Topics Exceeded %d", len(keyword))
+	if numOfPublishers > maxTopics {
+		glog.Infof("Max Topics Exceeded %d", numOfPublishers)
 		return
 	}
 
-	for _, key := range keyword {
-		glog.Infof("Publisher topic is : %s", key)
-		pubMgr.RegPublisherList(key)
-		cConfigList := envconfig.GetMessageBusConfig(key, "pub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
+	for PubIndex := 0 ; PubIndex < numOfPublishers; PubIndex++ {		
+		pubCtx, err := configMgr.GetPublisherByIndex(PubIndex)
+		if(err != nil) {
+			glog.Errorf("Error occured with error:%v", err)
+			return
+		}
+		topic := pubCtx.GetTopics()[0]
+		pubMgr.RegPublisherList(topic)
+		glog.Infof("Publisher topic is : %s", topic)
+		config, err := pubCtx.GetMsgbusConfig()
+		if err != nil {
+				glog.Error("Failed to get message bus config :%v", err)
+				return
+		}
 
-		if cConfigList != nil {
-			pubMgr.RegClientList(key)
-			pubMgr.CreateClient(key, cConfigList)
+
+		if config != nil {
+			pubMgr.RegClientList(topic)
+			pubMgr.CreateClient(topic, config)
 		}
 
 	}
@@ -120,8 +132,7 @@ func StartPublisher(pubTopics string) {
 	SubObj.Host = subServHost
 	SubObj.Port = subServPort
 	SubObj.Worker = int(runtimeInfo.PubWorker)
-	// Subscribe to the influxdb database
-	err := InfluxObj.Subscribe(SubObj, &pubMgr)
+	err = InfluxObj.Subscribe(SubObj, &pubMgr)
 	if err != nil {
 		glog.Errorf("StartPublisher: Failed to subscribe InfluxDB : %v", err)
 		os.Exit(-1)
@@ -130,18 +141,23 @@ func StartPublisher(pubTopics string) {
 }
 
 //StartSubscriber Function to start the subscriber and insert data to influxdb
-func StartSubscriber(subTopics string) {
-	var SubKeyword []string
+func StartSubscriber() {
 	InfluxObj.CnInfo = runtimeInfo
-	keyword := strings.Split(subTopics, ",")
-
 	var subMgr subManager.SubManager
 	var influxWrite dbManager.InfluxWriter
 	var err error
-
+	configMgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+	numOfSubscribers, err := configMgr.GetNumSubscribers()
+	if(err != nil) {
+		glog.Errorf("Error occured with error:%v", err)
+		return
+	}
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
-	influxdbConnectorConfig, err := configManager.ReadInfluxDBConnectorConfig(cfgMgrConfig)
+	influxdbConnectorConfig, err := configManager.ReadInfluxDBConnectorConfig()
 	if err != nil {
 		glog.Error("Error in creating Ignore list")
 	}
@@ -149,22 +165,34 @@ func StartSubscriber(subTopics string) {
 	influxWrite.TagList = influxdbConnectorConfig["tagsList"]
 
 	subMgr.Init()
-	if len(keyword) > maxSubTopics {
-		glog.Infof("Max SubTopics Exceeded %d", len(keyword))
+	if numOfSubscribers > maxSubTopics {
+		glog.Infof("Max SubTopics Exceeded %d", numOfSubscribers)
 		return
 	}
 
-	for _, key := range keyword {
-		SubKeyword = strings.Split(key, "/")
-		glog.Infof("Subscriber topic is : %v", SubKeyword[1])
-
-		subMgr.RegSubscriberList(SubKeyword[1])
-		cConfigList := envconfig.GetMessageBusConfig(key, "sub", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
-
-		if cConfigList != nil {
-			subMgr.RegClientList(SubKeyword[1])
-			subMgr.CreateClient(SubKeyword[1], cConfigList)
+	for SubIndex := 0; SubIndex > numOfSubscribers; SubIndex++ {
+		
+		subCtx, err := configMgr.GetSubscriberByIndex(SubIndex)
+		if(err != nil) {
+			glog.Errorf("Error occured with error:%v", err)
+			return
 		}
+
+		topic := subCtx.GetTopics()[0] 
+		glog.Infof("Subscriber topic is : %v", topic)
+
+		subMgr.RegSubscriberList(topic)
+		config, err := subCtx.GetMsgbusConfig()
+		if err != nil {
+				glog.Error("Failed to get message bus config :%v", err)
+				return
+		}
+
+		if config != nil {
+			subMgr.RegClientList(topic)
+			subMgr.CreateClient(topic, config)
+		}
+		SubIndex++
 	}
 
 	subMgr.StartAllSubscribers()
@@ -175,13 +203,26 @@ func StartSubscriber(subTopics string) {
 func startReqReply() {
 
 	InfluxObj.CnInfo = runtimeInfo
-	keyword := os.Getenv("AppName")
-
+	configMgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
+		glog.Fatalf("Config Manager initialization failed...")
+	}
+	keyword, err := configMgr.GetAppName()
+	if err != nil {
+		glog.Fatalf("Not able to read appname from etcd")
+	}
 	glog.Infof("Query service is : %s", keyword)
-
-	cConfigList := envconfig.GetMessageBusConfig(keyword, "server", InfluxObj.CnInfo.DevMode, cfgMgrConfig)
-
-	client, err := eismsgbus.NewMsgbusClient(cConfigList)
+	serverCtx, err := configMgr.GetServerByIndex(0)
+	if(err != nil) {
+		glog.Errorf("Error occured with error:%v", err)
+		return
+	}
+	config, err := serverCtx.GetMsgbusConfig()
+	if(err != nil) {
+		glog.Errorf("Error occured with error:%v", err)
+		return
+	}
+	client, err := eismsgbus.NewMsgbusClient(config)
 	if err != nil {
 		glog.Errorf("-- Error initializing message bus context: %v\n", err)
 		return
@@ -195,7 +236,7 @@ func startReqReply() {
 	var influxQuery dbManager.InfluxQuery
 	influxQuery.DbInfo = credConfig
 	influxQuery.CnInfo = runtimeInfo
-	influxdbQueryconfig, err := configManager.ReadInfluxDBQueryConfig(cfgMgrConfig)
+	influxdbQueryconfig, err := configManager.ReadInfluxDBQueryConfig()
 	if err != nil {
 		glog.Error("Error in creating query list")
 		os.Exit(-1)
@@ -228,38 +269,29 @@ func main() {
 	flag.Parse()
 	profiling, _ := strconv.ParseBool(os.Getenv("PROFILING_MODE"))
 	common.Profiling = profiling
-
-	appName := os.Getenv("AppName")
-	cfgMgrConfig = util.GetCryptoMap(appName)
-
-	_ = configManager.ReadCertKey("server_cert", influxCertPath, cfgMgrConfig)
-	_ = configManager.ReadCertKey("server_key", influxKeyPath, cfgMgrConfig)
-	_ = configManager.ReadCertKey("ca_cert", influxCaPath, cfgMgrConfig)
-
+	
 	// Initializing Etcd to set env variables
-	cfgMgrCli := configmgr.Init("etcd", cfgMgrConfig)
-	if cfgMgrCli == nil {
+	configMgr, err := eiscfgmgr.ConfigManager()
+	if err != nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
-
+	devMode, err := configMgr.IsDevMode()
+	if(err != nil) {
+		glog.Fatalf("Error occured with error:%v", err)
+	}
+	if devMode != true {
+		_ = configManager.ReadCertKey("server_cert", influxCertPath)
+		_ = configManager.ReadCertKey("server_key", influxKeyPath)
+		_ = configManager.ReadCertKey("ca_cert", influxCaPath)
+	}
 	flag.Set("logtostderr", "true")
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))
 	flag.Set("v", os.Getenv("GO_VERBOSE"))
 	done := make(chan bool)
 	readConfig()
 	StartDb()
-	pubTopics := os.Getenv("PubTopics")
-	if pubTopics != "" {
-		StartPublisher(pubTopics)
-	} else {
-		glog.Infof("Not starting Publisher since PubTopics env is not set")
-	}
-	subTopics := os.Getenv("SubTopics")
-	if subTopics != "" {
-		StartSubscriber(subTopics)
-	} else {
-		glog.Infof("Not starting Subscriber since SubTopics env is not set")
-	}
+	StartPublisher()
+	StartSubscriber()
 	go startReqReply()
 	<-done
 	cleanup()

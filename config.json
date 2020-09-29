@@ -15,5 +15,93 @@
         "tag_keys": [],
         "blacklist_query": ["CREATE","DROP","DELETE","ALTER","<script>"]
     },
-    "interfaces": {}
+    "interfaces": {
+        "Servers": [
+            {
+                "Name": "InfluxDBConnector",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:8675",
+                "AllowedClients": [
+                    "Visualizer","DiscoveryCreek","OpcuaExport","RestDataExport"
+                ]
+            }
+        ],
+        "Publishers": [
+            {
+                "Name": "Point_Data",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65015",
+                "Topics": [
+                    "point_data"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            },
+            {
+                "Name": "Point_Classifier_Results",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65016",
+                "Topics": [
+                    "point_classifier_results"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            },
+            {
+                "Name": "Humidity_Classifier_Results",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65030",
+                "Topics": [
+                    "humidity_classifier_results"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            },
+            {
+                "Name": "ts_data",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65031",
+                "Topics": [
+                    "ts_data"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            },
+            {
+                "Name": "rfc_results",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65032",
+                "Topics": [
+                    "rfc_results"
+                ],
+                "AllowedClients": [
+                    "*"
+                ]
+            }
+        ],
+        "Subscribers": [
+            {
+                "Name": "video",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65013",
+                "PublisherAppName": "VideoAnalytics",
+                "Topics": [
+                    "camera1_stream_results"
+                ]
+            },
+            {
+                "Name": "dc",
+                "Type": "zmq_tcp",
+                "EndPoint": "127.0.0.1:65014",
+                "PublisherAppName": "DiscoveryCreek",
+                "Topics": [
+                    "dc_point_data_results"
+                ]
+            }            
+        ]
+        }
 }

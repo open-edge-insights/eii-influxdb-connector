@@ -49,28 +49,7 @@ services:
       NO_PROXY: ${eis_no_proxy},${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
       ETCD_PREFIX: ${ETCD_PREFIX}
-
-      # MessageBus Endpoint Configuration
-      Clients: "Visualizer,DiscoveryCreek,OpcuaExport,RestDataExport"
-      Server: "zmq_tcp,127.0.0.1:8675"
-      # Server: "zmq_ipc,${SOCKET_DIR}/"
       INFLUXDB_TLS_CIPHERS: ${TLS_CIPHERS}
-      # Use IPC mode (zmq_ipc) when VideoIngestion, VideoAnalytics and Visualizer
-      # based containers are running on the same host. If they are running on diff
-      # host, please use TCP mode for communication.
-      # Eg: Stream cfg for
-      # IPC: zmq_ipc, <absolute_socket_directory_path>
-      # TPC: zmq_tcp, <publisher_host>:<publisher_port>
-      SubTopics: "VideoAnalytics/camera1_stream_results,DiscoveryCreek/dc_point_data_results"
-      dc_point_data_results_cfg: "zmq_tcp,127.0.0.1:65014"
-      camera1_stream_results_cfg: "zmq_tcp,127.0.0.1:65013"
-      PubTopics: "point_data,point_classifier_results,humidity_classifier_results,ts_data,rfc_results"
-      point_data_cfg: "zmq_tcp,127.0.0.1:65015"
-      # point_data_cfg: "zmq_ipc,${SOCKET_DIR}/"
-      point_classifier_results_cfg: "zmq_tcp,127.0.0.1:65016"
-      humidity_classifier_results_cfg: "zmq_tcp,127.0.0.1:65030"
-      rfc_results_cfg: "zmq_tcp,127.0.0.1:65032"
-      ts_data_cfg: "zmq_tcp,127.0.0.1:65031"
     volumes:
       - "vol_influxdb_data:/influxdata"
       - "vol_eis_socket:${SOCKET_DIR}"
