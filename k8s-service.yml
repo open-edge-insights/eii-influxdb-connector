@@ -60,7 +60,7 @@ spec:
     spec:
       containers:
       - name: ia-influxdbconnector
-        image: ia_influxdbconnector:${EIS_VERSION}
+        image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EIS_VERSION}
         securityContext:
           privileged: true
         volumeMounts:
@@ -102,30 +102,40 @@ spec:
           value: "/run/secrets/etcd_InfluxDBConnector_key/InfluxDBConnector_client_key.pem"
 
         # MessageBus Endpoint Configuration
-        - name: Clients
-          value: "Visualizer,DiscoveryCreek,OpcuaExport,RestDataExport"
-        - name: Server
-          value: "zmq_tcp,0.0.0.0:8675"
+        - name: SERVER_InfluxDBConnector_ENDPOINT
+          value: "0.0.0.0:8675"
         - name: INFLUXDB_TLS_CIPHERS
           value: ${TLS_CIPHERS}
-        - name: SubTopics
-          value: "VideoAnalytics/camera1_stream_results,DiscoveryCreek/dc_point_data_results"
-        - name: PubTopics
-          value: "point_data,point_classifier_results,humidity_classifier_results,ts_data,rfc_results"
-        - name: dc_point_data_results_cfg
-          value: "zmq_tcp,dc:65014"
-        - name: camera1_stream_results_cfg
-          value: "zmq_tcp,videoanalytics:65013"
-        - name: point_data_cfg
-          value: "zmq_tcp,0.0.0.0:65015"
-        - name: point_classifier_results_cfg
-          value: "zmq_tcp,0.0.0.0:65016"
-        - name: humidity_classifier_results_cfg
-          value: "zmq_tcp,0.0.0.0:65030"
-        - name: ts_data_cfg
-          value: "zmq_tcp,0.0.0.0:65031"
-        - name: rfc_results_cfg
-          value: "zmq_tcp,0.0.0.0:65032"
+        - name: PUBLISHER_Point_Data_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_Point_Data_ENDPOINT
+          value: "0.0.0.0:65015"
+        - name: PUBLISHER_Point_Classifier_Results_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_Point_Classifier_Results_ENDPOINT
+          value: "0.0.0.0:65016"
+        - name: PUBLISHER_Humidity_Classifier_Results_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_Humidity_Classifier_Results_ENDPOINT
+          value: "0.0.0.0:65030"
+        - name: PUBLISHER_ts_data_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_ts_data_ENDPOINT
+          value: "0.0.0.0:65031"
+        - name: PUBLISHER_rfc_results_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_rfc_results_ENDPOINT
+          value: "0.0.0.0:65032"
+        - name: PUBLISHER_TYPE
+          value: "zmq_tcp"
+        - name: SUBSCRIBER_video_ENDPOINT
+          value: "videoanalytics:65013"
+        - name: SUBSCRIBER_video_TYPE
+          value: "zmq_tcp"
+        - name: SUBSCRIBER_dc_ENDPOINT
+          value: "dc:65014"
+        - name: SUBSCRIBER_dc_TYPE
+          value: "zmq_tcp"
 
       volumes:
       - name: eis-socket
@@ -143,4 +153,3 @@ spec:
       - name: "influxdbconnector-key"
         secret:
           secretName: influxdbconnector-key
-
