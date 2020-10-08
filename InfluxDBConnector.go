@@ -170,7 +170,7 @@ func StartSubscriber() {
 		return
 	}
 
-	for SubIndex := 0; SubIndex > numOfSubscribers; SubIndex++ {
+	for SubIndex := 0; SubIndex < numOfSubscribers; SubIndex++ {
 		
 		subCtx, err := configMgr.GetSubscriberByIndex(SubIndex)
 		if(err != nil) {
@@ -192,7 +192,6 @@ func StartSubscriber() {
 			subMgr.RegClientList(topic)
 			subMgr.CreateClient(topic, config)
 		}
-		SubIndex++
 	}
 
 	subMgr.StartAllSubscribers()
