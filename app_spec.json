@@ -20,14 +20,22 @@
             "DEV_MODE": "$DEV_MODE",
             "PROFILING_MODE": "false",
             "ZMQ_RECV_HWM": "50",
-            "Clients": "DiscoveryCreek,OpcuaExport,RestDataExport",
-            "Server": "zmq_tcp,0.0.0.0:${ep.influxEISServer.localport}",
-            "SubTopics": "VideoAnalytics/camera1_stream_results,DiscoveryCreek/dc_point_data_results",
-            "camera1_stream_results_cfg": "zmq_tcp,${ep.influxSub.remoteaddress}:${ep.influxSub.remoteport}",
-            "PubTopics": "point_data,point_classifier_results",
-            "point_data_cfg": "zmq_tcp,0.0.0.0:${ep.pointDataOutput.localport}",
-            "point_classifier_results_cfg": "zmq_tcp,0.0.0.0:${ep.pointClsOutput.localport}",
-	    "dc_point_data_results_cfg": "zmq_tcp,${ep.influxDcSub.remoteaddress}:${ep.influxDcSub.remoteport}"
+
+            "SERVER_InfluxDBConnector_ENDPOINT": "0.0.0.0:${ep.influxEISServer.localport}",
+            "PUBLISHER_PointData_ENDPOINT" : "0.0.0.0:${ep.pointDataOutput.localport}",
+            "PUBLISHER_PointData_TYPE" : "zmq_tcp",
+            "PUBLISHER_PointClassifierResults_ENDPOINT" : "0.0.0.0:${ep.pointClsOutput.localport}",
+            "PUBLISHER_PointClassifierResults_TYPE" : "zmq_tcp",
+            "PUBLISHER_RFCResults_ENDPOINT" : "0.0.0.0:${ep.rfcOutput.localport}",
+            "PUBLISHER_RFCResults_TYPE" : "zmq_tcp",
+            "PUBLISHER_TSData_ENDPOINT" : "0.0.0.0:${ep.tsdataOutput.localport}",
+            "PUBLISHER_TSData_TYPE" : "zmq_tcp",
+            "PUBLISHER_HumidityClassifierResults_ENDPOINT" : "0.0.0.0:${ep.humdclsOutput.localport}",
+            "PUBLISHER_HumidityClassifierResults_TYPE" : "zmq_tcp",
+            "SUBSCRIBER_video_ENDPOINT" : "${ep.influxSub.remoteaddress}:${ep.influxSub.remoteport}",
+            "SUBSCRIBER_video_TYPE" : "zmq_tcp",
+            "SUBSCRIBER_dc_ENDPOINT" : "${ep.influxDcSub.remoteaddress}:${ep.influxDcSub.remoteport}",
+            "SUBSCRIBER_dc_TYPE" : "zmq_tcp"
         },
         "Endpoints": [
             {
@@ -62,6 +70,27 @@
                 "Port": "65016",
                 "DataType": "messages",
                 "Link": "pcinfluxout"
+            },
+            {
+                "Name": "rfcOutput",
+                "Endtype": "server",
+                "Port": "65032",
+                "DataType": "messages",
+                "Link": "rfcinfluxout"
+            },
+            {
+                "Name": "tsdataOutput",
+                "Endtype": "server",
+                "Port": "65031",
+                "DataType": "messages",
+                "Link": "tsinfluxout"
+            },
+            {
+                "Name": "humdclsOutput",
+                "Endtype": "server",
+                "Port": "65030",
+                "DataType": "messages",
+                "Link": "humdinfluxout"
             },
             {
                 "Name": "influxDcSub",

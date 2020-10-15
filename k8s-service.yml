@@ -106,28 +106,26 @@ spec:
           value: "0.0.0.0:8675"
         - name: INFLUXDB_TLS_CIPHERS
           value: ${TLS_CIPHERS}
-        - name: PUBLISHER_Point_Data_TYPE
+        - name: PUBLISHER_PointData_TYPE
           value: "zmq_tcp"
-        - name: PUBLISHER_Point_Data_ENDPOINT
+        - name: PUBLISHER_PointData_ENDPOINT
           value: "0.0.0.0:65015"
-        - name: PUBLISHER_Point_Classifier_Results_TYPE
+        - name: PUBLISHER_PointClassifierResults_TYPE
           value: "zmq_tcp"
-        - name: PUBLISHER_Point_Classifier_Results_ENDPOINT
+        - name: PUBLISHER_PointClassifierResults_ENDPOINT
           value: "0.0.0.0:65016"
-        - name: PUBLISHER_Humidity_Classifier_Results_TYPE
+        - name: PUBLISHER_HumidityClassifierResults_TYPE
           value: "zmq_tcp"
-        - name: PUBLISHER_Humidity_Classifier_Results_ENDPOINT
+        - name: PUBLISHER_HumidityClassifierResults_ENDPOINT
           value: "0.0.0.0:65030"
-        - name: PUBLISHER_ts_data_TYPE
+        - name: PUBLISHER_TSData_TYPE
           value: "zmq_tcp"
-        - name: PUBLISHER_ts_data_ENDPOINT
+        - name: PUBLISHER_TSData_ENDPOINT
           value: "0.0.0.0:65031"
-        - name: PUBLISHER_rfc_results_TYPE
+        - name: PUBLISHER_RFCResults_TYPE
           value: "zmq_tcp"
-        - name: PUBLISHER_rfc_results_ENDPOINT
+        - name: PUBLISHER_RFCResults_ENDPOINT
           value: "0.0.0.0:65032"
-        - name: PUBLISHER_TYPE
-          value: "zmq_tcp"
         - name: SUBSCRIBER_video_ENDPOINT
           value: "videoanalytics:65013"
         - name: SUBSCRIBER_video_TYPE

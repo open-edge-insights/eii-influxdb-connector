@@ -28,7 +28,7 @@
         ],
         "Publishers": [
             {
-                "Name": "Point_Data",
+                "Name": "PointData",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:65015",
                 "Topics": [
@@ -39,7 +39,7 @@
                 ]
             },
             {
-                "Name": "Point_Classifier_Results",
+                "Name": "PointClassifierResults",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:65016",
                 "Topics": [
@@ -50,7 +50,7 @@
                 ]
             },
             {
-                "Name": "Humidity_Classifier_Results",
+                "Name": "HumidityClassifierResults",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:65030",
                 "Topics": [
@@ -61,7 +61,7 @@
                 ]
             },
             {
-                "Name": "ts_data",
+                "Name": "TSData",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:65031",
                 "Topics": [
@@ -72,7 +72,7 @@
                 ]
             },
             {
-                "Name": "rfc_results",
+                "Name": "RFCResults",
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:65032",
                 "Topics": [
