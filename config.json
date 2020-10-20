@@ -20,7 +20,7 @@
             {
                 "Name": "InfluxDBConnector",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:8675",
+                "EndPoint": "127.0.0.1:65145",
                 "AllowedClients": [
                     "Visualizer","DiscoveryCreek","OpcuaExport","RestDataExport"
                 ]
