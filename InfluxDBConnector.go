@@ -15,8 +15,7 @@ package main
 import (
 	"flag"
 	"os"
-	
-	eiscfgmgr "ConfigMgr/eisconfigmgr"
+
 	eismsgbus "EISMessageBus/eismsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	configManager "IEdgeInsights/InfluxDBConnector/configmanager"
@@ -45,18 +44,19 @@ var InfluxObj dbManager.InfluxDBManager
 var pubMgr pubManager.PubManager
 var credConfig common.DbCredential
 var runtimeInfo common.AppConfig
+var CfgMgr configManager.ConfigManager
 
 //Function to read the DB credential and container runtime info from the config file
 func readConfig() {
 	var errConfig error
 	var errRuntimeInfo error
-	credConfig, errConfig = configManager.ReadInfluxConfig()
+	credConfig, errConfig = CfgMgr.ReadInfluxConfig()
 	if errConfig != nil {
 		glog.Error("Error in reading the DB credentials : %v" + errConfig.Error())
 		os.Exit(-1)
 	}
 
-	runtimeInfo, errRuntimeInfo = configManager.ReadContainerInfo()
+	runtimeInfo, errRuntimeInfo = CfgMgr.ReadContainerInfo()
 	if errRuntimeInfo != nil {
 		glog.Error("Error in reading the Runtime Info : %v" + errRuntimeInfo.Error())
 		os.Exit(-1)
@@ -86,12 +86,8 @@ func StartDb() {
 
 func StartPublisher() {
 	InfluxObj.CnInfo = runtimeInfo
-	configMgr, err := eiscfgmgr.ConfigManager()
 
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
-	numOfPublishers, err := configMgr.GetNumPublishers()
+	numOfPublishers, err := CfgMgr.ConfigMgr.GetNumPublishers()
 	if(err != nil) {
 		glog.Errorf("Error occured with error:%v", err)
 		return
@@ -104,7 +100,7 @@ func StartPublisher() {
 	}
 
 	for PubIndex := 0 ; PubIndex < numOfPublishers; PubIndex++ {		
-		pubCtx, err := configMgr.GetPublisherByIndex(PubIndex)
+		pubCtx, err := CfgMgr.ConfigMgr.GetPublisherByIndex(PubIndex)
 		if(err != nil) {
 			glog.Errorf("Error occured with error:%v", err)
 			return
@@ -146,18 +142,15 @@ func StartSubscriber() {
 	var subMgr subManager.SubManager
 	var influxWrite dbManager.InfluxWriter
 	var err error
-	configMgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
-	numOfSubscribers, err := configMgr.GetNumSubscribers()
+
+	numOfSubscribers, err := CfgMgr.ConfigMgr.GetNumSubscribers()
 	if(err != nil) {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
 	influxWrite.DbInfo = credConfig
 	influxWrite.CnInfo = runtimeInfo
-	influxdbConnectorConfig, err := configManager.ReadInfluxDBConnectorConfig()
+	influxdbConnectorConfig, err := CfgMgr.ReadInfluxDBConnectorConfig()
 	if err != nil {
 		glog.Error("Error in creating Ignore list")
 	}
@@ -172,7 +165,7 @@ func StartSubscriber() {
 
 	for SubIndex := 0; SubIndex < numOfSubscribers; SubIndex++ {
 		
-		subCtx, err := configMgr.GetSubscriberByIndex(SubIndex)
+		subCtx, err := CfgMgr.ConfigMgr.GetSubscriberByIndex(SubIndex)
 		if(err != nil) {
 			glog.Errorf("Error occured with error:%v", err)
 			return
@@ -202,16 +195,13 @@ func StartSubscriber() {
 func startReqReply() {
 
 	InfluxObj.CnInfo = runtimeInfo
-	configMgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
-	keyword, err := configMgr.GetAppName()
+
+	keyword, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
 		glog.Fatalf("Not able to read appname from etcd")
 	}
 	glog.Infof("Query service is : %s", keyword)
-	serverCtx, err := configMgr.GetServerByIndex(0)
+	serverCtx, err := CfgMgr.ConfigMgr.GetServerByIndex(0)
 	if(err != nil) {
 		glog.Errorf("Error occured with error:%v", err)
 		return
@@ -235,7 +225,7 @@ func startReqReply() {
 	var influxQuery dbManager.InfluxQuery
 	influxQuery.DbInfo = credConfig
 	influxQuery.CnInfo = runtimeInfo
-	influxdbQueryconfig, err := configManager.ReadInfluxDBQueryConfig()
+	influxdbQueryconfig, err := CfgMgr.ReadInfluxDBQueryConfig()
 	if err != nil {
 		glog.Error("Error in creating query list")
 		os.Exit(-1)
@@ -270,18 +260,16 @@ func main() {
 	common.Profiling = profiling
 	
 	// Initializing Etcd to set env variables
-	configMgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
-	devMode, err := configMgr.IsDevMode()
+
+	CfgMgr.Init()
+	devMode, err := CfgMgr.ConfigMgr.IsDevMode()
 	if(err != nil) {
 		glog.Fatalf("Error occured with error:%v", err)
 	}
 	if devMode != true {
-		_ = configManager.ReadCertKey("server_cert", influxCertPath)
-		_ = configManager.ReadCertKey("server_key", influxKeyPath)
-		_ = configManager.ReadCertKey("ca_cert", influxCaPath)
+		_ = CfgMgr.ReadCertKey("server_cert", influxCertPath)
+		_ = CfgMgr.ReadCertKey("server_key", influxKeyPath)
+		_ = CfgMgr.ReadCertKey("ca_cert", influxCaPath)
 	}
 	flag.Set("logtostderr", "true")
 	flag.Set("stderrthreshold", os.Getenv("GO_LOG_LEVEL"))

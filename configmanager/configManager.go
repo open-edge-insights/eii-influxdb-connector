@@ -38,22 +38,30 @@ type InfluxConfig struct {
 	} `json:"influxdb"`
 }
 
-// ReadInfluxConfig will read the influxdb configuration
-// from the json file
-func ReadInfluxConfig() (common.DbCredential, error) {
-	var influx InfluxConfig
-	var influxCred common.DbCredential
-	config_mgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
+// configmanager structure
+type ConfigManager struct {
+	ConfigMgr *eiscfgmgr.ConfigMgr
+}
+
+//Init will initailize the maps
+func (CfgMgr *ConfigManager) Init() {
+	CfgMgr.ConfigMgr, _ = eiscfgmgr.ConfigManager()
+	if CfgMgr.ConfigMgr == nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
+}
+// ReadInfluxConfig will read the influxdb configuration
+// from the json file
+func (CfgMgr *ConfigManager) ReadInfluxConfig() (common.DbCredential, error) {
+	var influx InfluxConfig
+	var influxCred common.DbCredential
 
-	appName, err := config_mgr.GetAppName()
+	appName, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
 		glog.Fatalf("Not able to read appname from etcd")
 	}
 
-	data, err := config_mgr.GetAppConfig()
+	data, err := CfgMgr.ConfigMgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxCred, err
@@ -90,15 +98,10 @@ func ReadInfluxConfig() (common.DbCredential, error) {
 
 // ReadContainerInfo will read the environment variable
 // for the subworkers, pubworkers and DEV mode info
-func ReadContainerInfo() (common.AppConfig, error) {
+func (CfgMgr *ConfigManager) ReadContainerInfo() (common.AppConfig, error) {
 
 	var cInfo common.AppConfig
-	var err error
-	config_mgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
-	devMode, err := config_mgr.IsDevMode()
+	devMode, err := CfgMgr.ConfigMgr.IsDevMode()
 	cInfo.DevMode = devMode
 	if err != nil {
 		glog.Errorf("Fail to read DEV_MODE from etcd: %v", err)
@@ -106,12 +109,12 @@ func ReadContainerInfo() (common.AppConfig, error) {
 	}
 
 
-	appName, err := config_mgr.GetAppName()
+	appName, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
 		glog.Fatalf("Not able to read appname from etcd")
 	}
 
-	data, err := config_mgr.GetAppConfig()
+	data, err := CfgMgr.ConfigMgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return cInfo, err
@@ -133,18 +136,14 @@ func ReadContainerInfo() (common.AppConfig, error) {
 
 // ReadCertKey will read the certificate from etcd
 // and write to path passed as argument
-func ReadCertKey(keyName string, filePath string) error {
-	config_mgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
+func (CfgMgr *ConfigManager) ReadCertKey(keyName string, filePath string) error {
 
-	appName, err := config_mgr.GetAppName()
+	appName, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
 		glog.Fatalf("Not able to read appname from etcd")
 	}
 
-	data, err := config_mgr.GetAppConfig()
+	data, err := CfgMgr.ConfigMgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for / %v / %v", appName, keyName)
 		return err
@@ -171,19 +170,15 @@ func ReadCertKey(keyName string, filePath string) error {
 
 // ReadInfluxDBConnectorConfig will read the file
 // and create an Ignore list
-func ReadInfluxDBConnectorConfig() (map[string][]string, error) {
+func (CfgMgr *ConfigManager) ReadInfluxDBConnectorConfig() (map[string][]string, error) {
 	influxdbConnCon := make(map[string][]string)
-	config_mgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
 
-	appName, err := config_mgr.GetAppName()
+	appName, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
 		glog.Fatalf("Not able to read appname from etcd")
 	}
 
-	data, err := config_mgr.GetAppConfig()
+	data, err := CfgMgr.ConfigMgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxdbConnCon, err
@@ -214,20 +209,16 @@ func ReadInfluxDBConnectorConfig() (map[string][]string, error) {
 
 // ReadInfluxDBQueryConfig will read the file
 // and create a Blacklist QueryList
-func ReadInfluxDBQueryConfig() (map[string][]string, error) {
+func (CfgMgr *ConfigManager) ReadInfluxDBQueryConfig() (map[string][]string, error) {
 
 	influxdbQuerycon := make(map[string][]string)
-	config_mgr, err := eiscfgmgr.ConfigManager()
-	if err != nil {
-		glog.Fatalf("Config Manager initialization failed...")
-	}
 
-	appName, err := config_mgr.GetAppName()
+	appName, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
 		glog.Fatalf("Not able to read appname from etcd")
 	}
 
-	data, err := config_mgr.GetAppConfig()
+	data, err := CfgMgr.ConfigMgr.GetAppConfig()
 	if err != nil {
 		glog.Errorf("Not able to read value from etcd for /%v/config", appName)
 		return influxdbQuerycon, err
