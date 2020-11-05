@@ -123,6 +123,7 @@ func StartPublisher() {
 			pubMgr.CreateClient(topic, config)
 		}
 
+		pubCtx.Destroy()
 	}
 
 	pubMgr.StartAllPublishers()
@@ -193,6 +194,7 @@ func StartSubscriber() {
 			subMgr.RegClientList(topic)
 			subMgr.CreateClient(topic, config)
 		}
+		subCtx.Destroy()
 	}
 
 	subMgr.StartAllSubscribers()
@@ -214,6 +216,8 @@ func startReqReply() {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
+	defer serverCtx.Destroy()
+
 	config, err := serverCtx.GetMsgbusConfig()
 	if err != nil {
 		glog.Errorf("Error occured with error:%v", err)
@@ -260,6 +264,7 @@ func startReqReply() {
 func cleanup() {
 	pubMgr.StopAllClient()
 	pubMgr.StopAllPublisher()
+	CfgMgr.ConfigMgr.Destroy()
 }
 
 func main() {
