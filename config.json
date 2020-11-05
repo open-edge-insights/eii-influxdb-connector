@@ -30,7 +30,7 @@
             {
                 "Name": "PointData",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65015",
+                "EndPoint": "127.0.0.1:65033",
                 "Topics": [
                     "point_data"
                 ],
@@ -41,7 +41,7 @@
             {
                 "Name": "PointClassifierResults",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65016",
+                "EndPoint": "127.0.0.1:65034",
                 "Topics": [
                     "point_classifier_results"
                 ],
@@ -96,7 +96,7 @@
             {
                 "Name": "dc",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65014",
+                "EndPoint": "127.0.0.1:65035",
                 "PublisherAppName": "DiscoveryCreek",
                 "Topics": [
                     "dc_point_data_results"

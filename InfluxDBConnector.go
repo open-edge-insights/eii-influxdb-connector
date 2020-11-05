@@ -37,7 +37,6 @@ const (
 	maxSubTopics   = 50
 )
 
-
 // InfluxObj is an object for InfluxDB Manager
 var InfluxObj dbManager.InfluxDBManager
 
@@ -88,7 +87,7 @@ func StartPublisher() {
 	InfluxObj.CnInfo = runtimeInfo
 
 	numOfPublishers, err := CfgMgr.ConfigMgr.GetNumPublishers()
-	if(err != nil) {
+	if err != nil {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
@@ -99,21 +98,25 @@ func StartPublisher() {
 		return
 	}
 
-	for PubIndex := 0 ; PubIndex < numOfPublishers; PubIndex++ {		
+	for PubIndex := 0; PubIndex < numOfPublishers; PubIndex++ {
 		pubCtx, err := CfgMgr.ConfigMgr.GetPublisherByIndex(PubIndex)
-		if(err != nil) {
+		if err != nil {
 			glog.Errorf("Error occured with error:%v", err)
 			return
 		}
-		topic := pubCtx.GetTopics()[0]
+		topics, err := pubCtx.GetTopics()
+		if err != nil {
+			glog.Errorf("Failed to fetch topics : %v", err)
+			return
+		}
+		topic := topics[0]
 		pubMgr.RegPublisherList(topic)
 		glog.Infof("Publisher topic is : %s", topic)
 		config, err := pubCtx.GetMsgbusConfig()
 		if err != nil {
-				glog.Error("Failed to get message bus config :%v", err)
-				return
+			glog.Error("Failed to get message bus config :%v", err)
+			return
 		}
-
 
 		if config != nil {
 			pubMgr.RegClientList(topic)
@@ -144,7 +147,7 @@ func StartSubscriber() {
 	var err error
 
 	numOfSubscribers, err := CfgMgr.ConfigMgr.GetNumSubscribers()
-	if(err != nil) {
+	if err != nil {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
@@ -164,21 +167,26 @@ func StartSubscriber() {
 	}
 
 	for SubIndex := 0; SubIndex < numOfSubscribers; SubIndex++ {
-		
+
 		subCtx, err := CfgMgr.ConfigMgr.GetSubscriberByIndex(SubIndex)
-		if(err != nil) {
+		if err != nil {
 			glog.Errorf("Error occured with error:%v", err)
 			return
 		}
 
-		topic := subCtx.GetTopics()[0] 
+		topics, err := subCtx.GetTopics()
+		if err != nil {
+			glog.Errorf("Failed to fetch topics : %v", err)
+			return
+		}
+		topic := topics[0]
 		glog.Infof("Subscriber topic is : %v", topic)
 
 		subMgr.RegSubscriberList(topic)
 		config, err := subCtx.GetMsgbusConfig()
 		if err != nil {
-				glog.Error("Failed to get message bus config :%v", err)
-				return
+			glog.Error("Failed to get message bus config :%v", err)
+			return
 		}
 
 		if config != nil {
@@ -202,12 +210,12 @@ func startReqReply() {
 	}
 	glog.Infof("Query service is : %s", keyword)
 	serverCtx, err := CfgMgr.ConfigMgr.GetServerByIndex(0)
-	if(err != nil) {
+	if err != nil {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
 	config, err := serverCtx.GetMsgbusConfig()
-	if(err != nil) {
+	if err != nil {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
@@ -258,12 +266,12 @@ func main() {
 	flag.Parse()
 	profiling, _ := strconv.ParseBool(os.Getenv("PROFILING_MODE"))
 	common.Profiling = profiling
-	
+
 	// Initializing Etcd to set env variables
 
 	CfgMgr.Init()
 	devMode, err := CfgMgr.ConfigMgr.IsDevMode()
-	if(err != nil) {
+	if err != nil {
 		glog.Fatalf("Error occured with error:%v", err)
 	}
 	if devMode != true {

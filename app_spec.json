@@ -60,14 +60,14 @@
             {
                 "Name": "pointDataOutput",
                 "Endtype": "server",
-                "Port": "65015",
+                "Port": "65033",
                 "DataType": "messages",
                 "Link": "pdinfluxout"
             },
             {
                 "Name": "pointClsOutput",
                 "Endtype": "server",
-                "Port": "65016",
+                "Port": "65034",
                 "DataType": "messages",
                 "Link": "pcinfluxout"
             },

@@ -28,9 +28,9 @@ spec:
     app: influxdbconnector
   ports:
   - name: point-data-port
-    port: 65015
+    port: 65033
   - name: point-classifier-data-port
-    port: 65016
+    port: 65034
   - name: http
     port: 8086
   - name: humidity-classifier-results-port
@@ -131,7 +131,7 @@ spec:
         - name: SUBSCRIBER_video_TYPE
           value: "zmq_tcp"
         - name: SUBSCRIBER_dc_ENDPOINT
-          value: "dc:65014"
+          value: "dc:65035"
         - name: SUBSCRIBER_dc_TYPE
           value: "zmq_tcp"
 
