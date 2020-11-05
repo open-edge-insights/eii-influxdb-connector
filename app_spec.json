@@ -41,7 +41,7 @@
             {
                 "Name": "influxEISServer",
                 "Endtype": "server",
-                "Port": "8675",
+                "Port": "65145",
                 "DataType": "messages",
                 "Link": "sinfluxout"
             },

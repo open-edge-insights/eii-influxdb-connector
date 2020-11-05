@@ -39,6 +39,8 @@ spec:
     port: 65031
   - name: rfc-results-port
     port: 65032
+  - name: influx-server-port
+    port: 65145
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -103,7 +105,7 @@ spec:
 
         # MessageBus Endpoint Configuration
         - name: SERVER_InfluxDBConnector_ENDPOINT
-          value: "0.0.0.0:8675"
+          value: "0.0.0.0:65145"
         - name: INFLUXDB_TLS_CIPHERS
           value: ${TLS_CIPHERS}
         - name: PUBLISHER_PointData_TYPE
