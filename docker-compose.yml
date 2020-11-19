@@ -35,6 +35,11 @@ services:
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
     read_only: true
     ipc: "none"
+    security_opt:
+    - no-new-privileges
+    healthcheck:
+      test: ["CMD-SHELL", "exit", "0"]
+      interval: 5m
     image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EIS_VERSION}
     container_name: ia_influxdbconnector
     hostname: ia_influxdbconnector

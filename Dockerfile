@@ -83,5 +83,8 @@ RUN apt-get remove -y wget && \
 
 COPY schema.json .
 COPY startup.sh .
+
+HEALTHCHECK NONE
+
 ENTRYPOINT ["./startup.sh"]
 
