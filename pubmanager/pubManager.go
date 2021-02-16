@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package pubmanager
 
 import (
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
         "strings"
         "strconv"
@@ -25,11 +25,11 @@ import (
 type PubManager struct {
 	// Will keep the map of endpoint name to the
 	// client object
-	clients map[string]*eismsgbus.MsgbusClient
+	clients map[string]*eiimsgbus.MsgbusClient
 
 	// Will keep the map of Topic Name/measurement Name
 	// to the publisher object
-	publishers map[string]*eismsgbus.Publisher
+	publishers map[string]*eiimsgbus.Publisher
 
 	// Info of registered Publishers
 	pubConfigList []common.PubEndPoint
@@ -43,8 +43,8 @@ type PubManager struct {
 
 //Init will initailize the maps
 func (pubMgr *PubManager) Init() {
-	pubMgr.clients = make(map[string]*eismsgbus.MsgbusClient)
-	pubMgr.publishers = make(map[string]*eismsgbus.Publisher)
+	pubMgr.clients = make(map[string]*eiimsgbus.MsgbusClient)
+	pubMgr.publishers = make(map[string]*eiimsgbus.Publisher)
 }
 
 // RegPublisherList function will register the publishers and maintain
@@ -74,7 +74,7 @@ func (pubMgr *PubManager) RegClientList(clientName string) error {
 func (pubMgr *PubManager) CreateClient(key string, config map[string]interface{}) error {
 
 	var err error
-	pubMgr.clients[key], err = eismsgbus.NewMsgbusClient(config)
+	pubMgr.clients[key], err = eiimsgbus.NewMsgbusClient(config)
 	if err != nil {
 		glog.Errorf("-- Error creating context: %v\n", err)
 	}

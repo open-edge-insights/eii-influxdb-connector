@@ -11,15 +11,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package main
 
 import (
-	eismsgbus "EISMessageBus/eismsgbus"
-	types "EISMessageBus/pkg/types"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
+	types "EIIMessageBus/pkg/types"
 	"flag"
 	"fmt"
 )
 
 func testPublisher(config map[string]interface{}, topic string) {
 	fmt.Println("-- Initializing message bus context")
-	client, err := eismsgbus.NewMsgbusClient(config)
+	client, err := eiimsgbus.NewMsgbusClient(config)
 	if err != nil {
 		fmt.Printf("-- Error initializing message bus context: %v\n", err)
 		return
@@ -60,7 +60,7 @@ func testPublisher(config map[string]interface{}, topic string) {
 
 func testSubscriber(config map[string]interface{}, topic string) {
 	fmt.Println("-- Initializing message bus context")
-	client, err := eismsgbus.NewMsgbusClient(config)
+	client, err := eiimsgbus.NewMsgbusClient(config)
 	if err != nil {
 		fmt.Printf("-- Error initializing message bus context: %v\n", err)
 		return
@@ -104,14 +104,14 @@ func main() {
 	}
 
 	fmt.Printf("-- Loading Publisher configuration file %s\n", *pubconfigFile)
-	pubconfig, err := eismsgbus.ReadJsonConfig(*pubconfigFile)
+	pubconfig, err := eiimsgbus.ReadJsonConfig(*pubconfigFile)
 	if err != nil {
 		fmt.Printf("-- Failed to parse config: %v\n", err)
 		return
 	}
 
 	fmt.Printf("-- Loading Subscriber configuration file %s\n", *subconfigFile)
-	subconfig, err := eismsgbus.ReadJsonConfig(*subconfigFile)
+	subconfig, err := eiimsgbus.ReadJsonConfig(*subconfigFile)
 	if err != nil {
 		fmt.Printf("-- Failed to parse config: %v\n", err)
 		return

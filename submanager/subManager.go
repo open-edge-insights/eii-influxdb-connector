@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 package submanager
 
 import (
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	"encoding/json"
 	"strconv"
@@ -26,9 +26,9 @@ import (
 type SubManager struct {
 	// Will keep the map of Topic Name/measurement Name
 	// to the publisher object
-	subscribers map[string]*eismsgbus.Subscriber
+	subscribers map[string]*eiimsgbus.Subscriber
 
-	clients map[string]*eismsgbus.MsgbusClient
+	clients map[string]*eiimsgbus.MsgbusClient
 
 	// Info of registered Publishers
 	subConfigList []common.SubEndPoint
@@ -39,8 +39,8 @@ type SubManager struct {
 
 //Init will initailize the maps
 func (subMgr *SubManager) Init() {
-	subMgr.clients = make(map[string]*eismsgbus.MsgbusClient)
-	subMgr.subscribers = make(map[string]*eismsgbus.Subscriber)
+	subMgr.clients = make(map[string]*eiimsgbus.MsgbusClient)
+	subMgr.subscribers = make(map[string]*eiimsgbus.Subscriber)
 }
 
 // RegSubscriberList function will register the publishers and maintain
@@ -64,7 +64,7 @@ func (subMgr *SubManager) RegClientList(clientName string) error {
 func (subMgr *SubManager) CreateClient(key string, config map[string]interface{}) error {
 
 	var err error
-	subMgr.clients[key], err = eismsgbus.NewMsgbusClient(config)
+	subMgr.clients[key], err = eiimsgbus.NewMsgbusClient(config)
 	if err != nil {
 		glog.Errorf("-- Error creating context: %v\n", err)
 	}
@@ -103,7 +103,7 @@ func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface, worker int)
 	}
 }
 
-func processMsg(sub *eismsgbus.Subscriber, out common.InsertInterface, workerID int) {
+func processMsg(sub *eiimsgbus.Subscriber, out common.InsertInterface, workerID int) {
 	for {
 		msg := <-sub.MessageChannel
 		// parse it get the InfluxRow object ir.

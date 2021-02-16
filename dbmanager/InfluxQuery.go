@@ -17,7 +17,7 @@ import (
 	"errors"
 	"regexp"
 
-	types "EISMessageBus/pkg/types"
+	types "EIIMessageBus/pkg/types"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	inflxUtil "IEdgeInsights/common/util/influxdb"
 
