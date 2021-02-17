@@ -22,7 +22,7 @@
                 "Type": "zmq_tcp",
                 "EndPoint": "127.0.0.1:65145",
                 "AllowedClients": [
-                    "Visualizer","DiscoveryCreek","OpcuaExport","RestDataExport"
+                    "Visualizer","OpcuaExport","RestDataExport"
                 ]
             }
         ],
@@ -92,16 +92,7 @@
                 "Topics": [
                     "camera1_stream_results"
                 ]
-            },
-            {
-                "Name": "dc",
-                "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65035",
-                "PublisherAppName": "DiscoveryCreek",
-                "Topics": [
-                    "dc_point_data_results"
-                ]
-            }            
+            }   
         ]
         }
 }

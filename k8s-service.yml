@@ -132,10 +132,6 @@ spec:
           value: "videoanalytics:65013"
         - name: SUBSCRIBER_video_TYPE
           value: "zmq_tcp"
-        - name: SUBSCRIBER_dc_ENDPOINT
-          value: "dc:65035"
-        - name: SUBSCRIBER_dc_TYPE
-          value: "zmq_tcp"
 
       volumes:
       - name: eis-socket
