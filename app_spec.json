@@ -33,9 +33,7 @@
             "PUBLISHER_HumidityClassifierResults_ENDPOINT" : "0.0.0.0:${ep.humdclsOutput.localport}",
             "PUBLISHER_HumidityClassifierResults_TYPE" : "zmq_tcp",
             "SUBSCRIBER_video_ENDPOINT" : "${ep.influxSub.remoteaddress}:${ep.influxSub.remoteport}",
-            "SUBSCRIBER_video_TYPE" : "zmq_tcp",
-            "SUBSCRIBER_dc_ENDPOINT" : "${ep.influxDcSub.remoteaddress}:${ep.influxDcSub.remoteport}",
-            "SUBSCRIBER_dc_TYPE" : "zmq_tcp"
+            "SUBSCRIBER_video_TYPE" : "zmq_tcp"
         },
         "Endpoints": [
             {
@@ -91,12 +89,6 @@
                 "Port": "65030",
                 "DataType": "messages",
                 "Link": "humdinfluxout"
-            },
-            {
-                "Name": "influxDcSub",
-                "Endtype": "client",
-                "DataType": "messages",
-                "Link": "dc-output"
             }
         ]
     }
