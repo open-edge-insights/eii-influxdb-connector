@@ -16,7 +16,7 @@ import (
 	"flag"
 	"os"
 
-	eismsgbus "EISMessageBus/eismsgbus"
+	eiimsgbus "EIIMessageBus/eiimsgbus"
 	common "IEdgeInsights/InfluxDBConnector/common"
 	configManager "IEdgeInsights/InfluxDBConnector/configmanager"
 	dbManager "IEdgeInsights/InfluxDBConnector/dbmanager"
@@ -223,7 +223,7 @@ func startReqReply() {
 		glog.Errorf("Error occured with error:%v", err)
 		return
 	}
-	client, err := eismsgbus.NewMsgbusClient(config)
+	client, err := eiimsgbus.NewMsgbusClient(config)
 	if err != nil {
 		glog.Errorf("-- Error initializing message bus context: %v\n", err)
 		return

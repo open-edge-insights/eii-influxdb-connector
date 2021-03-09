@@ -19,7 +19,7 @@ import (
 	"io/ioutil"
 	"strconv"
 
-	eiscfgmgr "ConfigMgr/eisconfigmgr"
+	eiicfgmgr "ConfigMgr/eiiconfigmgr"
 	common "IEdgeInsights/InfluxDBConnector/common"
 
 	"github.com/golang/glog"
@@ -40,12 +40,12 @@ type InfluxConfig struct {
 
 // configmanager structure
 type ConfigManager struct {
-	ConfigMgr *eiscfgmgr.ConfigMgr
+	ConfigMgr *eiicfgmgr.ConfigMgr
 }
 
 //Init will initailize the maps
 func (CfgMgr *ConfigManager) Init() {
-	CfgMgr.ConfigMgr, _ = eiscfgmgr.ConfigManager()
+	CfgMgr.ConfigMgr, _ = eiicfgmgr.ConfigManager()
 	if CfgMgr.ConfigMgr == nil {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
