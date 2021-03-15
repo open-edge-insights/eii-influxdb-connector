@@ -44,9 +44,9 @@ func (idbMgr *InfluxDBManager) Init() error {
 	var cmd *exec.Cmd
 
 	if idbMgr.CnInfo.DevMode {
-		cmd = exec.Command("./InfluxDBConnector/influx_start.sh", "dev_mode")
+		cmd = exec.Command("./influx_start.sh", "dev_mode")
 	} else {
-		cmd = exec.Command("./InfluxDBConnector/influx_start.sh")
+		cmd = exec.Command("./influx_start.sh")
 	}
 
 	err := cmd.Run()

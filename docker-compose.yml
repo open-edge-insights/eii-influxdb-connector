@@ -29,10 +29,12 @@ services:
       context: $PWD/../InfluxDBConnector
       dockerfile: $PWD/../InfluxDBConnector/Dockerfile
       args:
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         EII_VERSION: ${EII_VERSION}
         EII_UID: ${EII_UID}
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     read_only: true
     ipc: "none"
     security_opt:
