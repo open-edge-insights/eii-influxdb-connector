@@ -79,6 +79,7 @@ ARG CMAKE_INSTALL_PREFIX
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=builder ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
 COPY --from=builder /usr/bin/influxd /usr/bin/influxd
+COPY --from=builder /usr/bin/influx /usr/bin/influx
 COPY --from=builder /etc/influxdb /etc/influxdb
 COPY --from=builder $ARTIFACTS .
 
