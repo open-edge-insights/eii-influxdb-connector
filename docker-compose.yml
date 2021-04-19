@@ -32,6 +32,7 @@ services:
         UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         EII_VERSION: ${EII_VERSION}
         EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
         DOCKER_REGISTRY: ${DOCKER_REGISTRY}
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
@@ -62,7 +63,6 @@ services:
       - "vol_influxdb_data:/influxdata"
       - "vol_eii_socket:${SOCKET_DIR}"
       - "vol_influxdb_conf:/tmp/influxdb"
-    user: ${EII_UID}
     ports:
       - "$INFLUXDB_PORT:$INFLUXDB_PORT"
     secrets:

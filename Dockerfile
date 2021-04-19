@@ -84,6 +84,9 @@ COPY --from=builder /etc/influxdb /etc/influxdb
 COPY --from=builder $ARTIFACTS .
 
 ARG EII_UID
+ARG EII_USER_NAME
+RUN groupadd $EII_USER_NAME -g $EII_UID && \
+    useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
 RUN mkdir -p /etc/ssl/influxdb && \
     mkdir -p /etc/ssl/ca && \
     mkdir -p /tmp/influxdb/log && \
@@ -91,6 +94,8 @@ RUN mkdir -p /etc/ssl/influxdb && \
     chown -R ${EII_UID} /etc/ssl/influxdb && \
     chown -R ${EII_UID} /etc/ssl/ca && \
     chown ${EII_UID} /tmp/influxdb/log/influxd.log
+
+USER $EII_USER_NAME
 
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib
 HEALTHCHECK NONE
