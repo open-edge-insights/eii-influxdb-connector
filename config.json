@@ -20,7 +20,7 @@
             {
                 "Name": "InfluxDBConnector",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65145",
+                "EndPoint": "0.0.0.0:65145",
                 "AllowedClients": [
                     "Visualizer","OpcuaExport","RestDataExport"
                 ]
@@ -30,7 +30,7 @@
             {
                 "Name": "PointData",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65033",
+                "EndPoint": "0.0.0.0:65033",
                 "Topics": [
                     "point_data"
                 ],
@@ -41,7 +41,7 @@
             {
                 "Name": "PointClassifierResults",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65034",
+                "EndPoint": "0.0.0.0:65034",
                 "Topics": [
                     "point_classifier_results"
                 ],
@@ -52,7 +52,7 @@
             {
                 "Name": "HumidityClassifierResults",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65030",
+                "EndPoint": "0.0.0.0:65030",
                 "Topics": [
                     "humidity_classifier_results"
                 ],
@@ -63,7 +63,7 @@
             {
                 "Name": "TSData",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65031",
+                "EndPoint": "0.0.0.0:65031",
                 "Topics": [
                     "ts_data"
                 ],
@@ -74,7 +74,7 @@
             {
                 "Name": "RFCResults",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65032",
+                "EndPoint": "0.0.0.0:65032",
                 "Topics": [
                     "rfc_results"
                 ],
@@ -87,7 +87,7 @@
             {
                 "Name": "video",
                 "Type": "zmq_tcp",
-                "EndPoint": "127.0.0.1:65013",
+                "EndPoint": "ia_video_analytics:65013",
                 "PublisherAppName": "VideoAnalytics",
                 "Topics": [
                     "camera1_stream_results"

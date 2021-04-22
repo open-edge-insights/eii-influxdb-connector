@@ -46,15 +46,14 @@ services:
     image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EII_VERSION}
     container_name: ia_influxdbconnector
     hostname: ia_influxdbconnector
-    network_mode: host
     restart: unless-stopped
     environment:
       AppName: "InfluxDBConnector"
       CertType: "zmq,pem"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
-      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: ${ETCD_HOST}
+      NO_PROXY: ${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
@@ -65,6 +64,14 @@ services:
       - "vol_influxdb_conf:/tmp/influxdb"
     ports:
       - "$INFLUXDB_PORT:$INFLUXDB_PORT"
+      - 65145:65145
+      - 65030:65030
+      - 65031:65031
+      - 65032:65032
+      - 65033:65033
+      - 65034:65034
+    networks:
+      - eii
     secrets:
       - ca_etcd
       - etcd_InfluxDBConnector_cert
