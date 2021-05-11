@@ -72,6 +72,8 @@ spec:
           mountPath: /influxdata
         - name: "ca-cert"
           mountPath: /run/secrets/ca_etcd
+        - name: tmp-ssl
+          mountPath: /tmp/influxdb/ssl
         - name: "influxdbconnector-cert"
           mountPath: /run/secrets/etcd_InfluxDBConnector_cert
         - name: "influxdbconnector-key"
@@ -140,6 +142,8 @@ spec:
       - name: influxdata
         hostPath:
           path: ${EII_INSTALL_PATH}/data
+      - name: tmp-ssl
+        emptyDir: {}
       - name: "ca-cert"
         secret:
           secretName: ca-etcd

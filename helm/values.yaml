@@ -1,0 +1,18 @@
+config:
+    influxdbconnector:
+      name: influxdbconnector
+      point_data_port: 65033
+      point_classifier_data_port: 65034
+      influx_http: 8086
+      humidity_classifier_results_port: 65030
+      ts_data_port: 65031
+      rfc_results_port: 65032
+      influx_server_port: 65145
+      INFLUXDB_TLS_CIPHERS: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+volumes:
+  influxdata:
+    name: vol-influxdata
+    size: 1Gi
+    location: "/influxdata"
+    hostpath: "/opt/intel/eii/data"
+
