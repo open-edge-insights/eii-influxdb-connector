@@ -67,8 +67,10 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        {{- if eq .Values.config.influxdbconnector.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
           mountPath: {{ .Values.volumes.eii_socket.location }}
+        {{- end }}
         - name: {{ .Values.volumes.influxdata.name }}
           mountPath: {{ .Values.volumes.influxdata.location }}
         - name: tmp-ssl
@@ -89,11 +91,13 @@ spec:
           value: {{ .Values.config.etcd.name }}
         - name: ETCD_CLIENT_PORT
           value: '{{ .Values.config.etcd.client_port }}'
-
-        - name: SERVER_InfluxDBConnector_ENDPOINT
-          value: "0.0.0.0:{{ .Values.config.influxdbconnector.influx_server_port }}"
         - name: INFLUXDB_TLS_CIPHERS
           value: {{ .Values.config.influxdbconnector.INFLUXDB_TLS_CIPHERS }}
+        {{- if eq .Values.config.influxdbconnector.IPC false}}
+        - name: SERVER_InfluxDBConnector_TYPE
+          value: "zmq_tcp"
+        - name: SERVER_InfluxDBConnector_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.influx_server_port }}"
         - name: PUBLISHER_PointData_TYPE
           value: "zmq_tcp"
         - name: PUBLISHER_PointData_ENDPOINT
@@ -120,6 +124,36 @@ spec:
         - name: SUBSCRIBER_TYPE
           value: "zmq_tcp"
         {{- end }}
+        {{- else }}
+        - name: SERVER_InfluxDBConnector_TYPE
+          value: "zmq_ipc"
+        - name: SERVER_InfluxDBConnector_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_PointData_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_PointData_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_PointClassifierResults_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_PointClassifierResults_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_HumidityClassifierResults_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_HumidityClassifierResults_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_TSData_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_TSData_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_RFCResults_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_RFCResults_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_TYPE
+          value: "zmq_ipc"
+        {{- end }}
         {{ if eq .Values.env.dev_mode false}}
         - name: CONFIGMGR_CACERT
           value: "/run/secrets/etcd/ca_certificate.pem"
@@ -133,9 +167,11 @@ spec:
       - name: {{ .Values.volumes.influxdata.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volumes.influxdata.name }}
+      {{- if eq .Values.config.influxdbconnector.IPC true}}
       - name: {{ .Values.volumes.eii_socket.name }}
         persistentVolumeClaim:
           claimName: {{ .Values.volumes.eii_socket.name }}
+      {{- end }}
       - name: tmp-ssl
         emptyDir:
           medium: Memory
