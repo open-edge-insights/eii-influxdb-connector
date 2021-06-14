@@ -62,7 +62,7 @@ spec:
     spec:
       containers:
       - name: ia-influxdbconnector
-        image: {{ .Values.registry }}ia_influxdbconnector:{{ .Values.eii_version }}
+        image: {{ .Values.DOCKER_REGISTRY }}ia_influxdbconnector:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         securityContext:
           privileged: true
@@ -75,7 +75,7 @@ spec:
           mountPath: {{ .Values.volumes.influxdata.location }}
         - name: tmp-ssl
           mountPath: /tmp/influxdb/ssl
-        {{ if eq .Values.env.dev_mode false}}
+        {{ if eq .Values.env.DEV_MODE false}}
         - name: etcd-certs
           mountPath: /run/secrets/etcd/
         {{ end }}
@@ -84,7 +84,7 @@ spec:
         - name: AppName
           value: "InfluxDBConnector"
         - name: DEV_MODE
-          value: '{{ .Values.env.dev_mode }}'
+          value: '{{ .Values.env.DEV_MODE }}'
         - name: PROFILING_MODE
           value: '{{ .Values.env.PROFILING_MODE }}'
         - name: ETCD_HOST
@@ -154,7 +154,7 @@ spec:
         - name: SUBSCRIBER_TYPE
           value: "zmq_ipc"
         {{- end }}
-        {{ if eq .Values.env.dev_mode false}}
+        {{ if eq .Values.env.DEV_MODE false}}
         - name: CONFIGMGR_CACERT
           value: "/run/secrets/etcd/ca_certificate.pem"
         - name: CONFIGMGR_CERT
@@ -175,7 +175,7 @@ spec:
       - name: tmp-ssl
         emptyDir:
           medium: Memory
-      {{ if eq .Values.env.dev_mode false}}
+      {{ if eq .Values.env.DEV_MODE false}}
       - name: etcd-certs
         secret:
           secretName: eii-certs
