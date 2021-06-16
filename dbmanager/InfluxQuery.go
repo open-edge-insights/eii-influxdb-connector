@@ -72,7 +72,7 @@ func (iq *InfluxQuery) QueryInflux(msg *types.MsgEnvelope) (*types.MsgEnvelope, 
 		q := client.Query{
 			Command:   command,
 			Database:  iq.DbInfo.Database,
-			Precision: "s",
+			Precision: "ns",
 		}
 
 		if response, err := clientadmin.Query(q); err == nil {
