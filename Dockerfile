@@ -21,11 +21,10 @@
 # Dockerfile for InfluxDBConnector
 
 ARG EII_VERSION
-ARG DOCKER_REGISTRY
 ARG UBUNTU_IMAGE_VERSION
 ARG ARTIFACTS="/artifacts"
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
-FROM ${DOCKER_REGISTRY}ia_eiibase:${EII_VERSION} as builder
+FROM ia_common:$EII_VERSION as common
+FROM ia_eiibase:${EII_VERSION} as builder
 LABEL description="InfluxDBConnector image"
 
 ARG INFLUXDB_GO_PATH=${GOPATH}/src/github.com/influxdata/influxdb

@@ -34,7 +34,6 @@ services:
         EII_UID: ${EII_UID}
         EII_USER_NAME: ${EII_USER_NAME}
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
-        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     read_only: true
     ipc: "none"
@@ -43,7 +42,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "exit", "0"]
       interval: 5m
-    image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_influxdbconnector:${EII_VERSION}
     container_name: ia_influxdbconnector
     hostname: ia_influxdbconnector
     restart: unless-stopped
