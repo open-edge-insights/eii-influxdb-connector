@@ -60,10 +60,16 @@ spec:
       labels:
         app: influxdbconnector
     spec:
+      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
       containers:
       - name: ia-influxdbconnector
         image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_influxdbconnector:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.config.influxdbconnector.influx_http }}
         securityContext:
           privileged: true
         volumeMounts:
