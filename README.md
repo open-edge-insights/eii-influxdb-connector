@@ -1,3 +1,8 @@
+**Contents**
+
+- [`InfluxDBConnector Module`](#influxdbconnector-module)
+  - [`Configuration`](#configuration)
+
 # `InfluxDBConnector Module`
 
 1. InfluxDBConnector will subscribe to the InfluxDB and start the zmq
