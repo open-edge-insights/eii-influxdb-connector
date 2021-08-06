@@ -1,0 +1,195 @@
+# Copyright (c) 2021 Intel Corporation.
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.config.influxdbconnector.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ports:
+  - port: {{ .Values.config.influxdbconnector.point_data_port }}
+    name: point-data-port
+  - port: {{ .Values.config.influxdbconnector.point_classifier_data_port }}
+    name: point-classifier-data-port
+  - port: {{ .Values.config.influxdbconnector.influx_http }}
+    name: http
+  - port: {{ .Values.config.influxdbconnector.humidity_classifier_results_port }}
+    name: humidity-classifier-results-port
+  - port: {{ .Values.config.influxdbconnector.ts_data_port }}
+    name: ts-data-port
+  - port: {{ .Values.config.influxdbconnector.rfc_results_port }}
+    name: rfc-results-port
+  - port: {{ .Values.config.influxdbconnector.influx_server_port }}
+    name: influx-server-port
+  selector:
+    app: influxdbconnector
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: influxdbconnector
+  name: deployment-influxdbconnector
+  namespace: {{ .Values.namespace }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influxdbconnector
+  template:
+    metadata:
+      labels:
+        app: influxdbconnector
+    spec:
+      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
+      containers:
+      - name: ia-influxdbconnector
+        image: {{ .Values.DOCKER_REGISTRY }}openedgeinsights/ia_influxdbconnector:{{ .Values.EII_VERSION }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.config.influxdbconnector.influx_http }}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        {{- if eq .Values.config.influxdbconnector.IPC true}}
+        - name: {{ .Values.volumes.eii_socket.name }}
+          mountPath: {{ .Values.volumes.eii_socket.location }}
+        {{- end }}
+        - name: {{ .Values.volumes.influxdata.name }}
+          mountPath: {{ .Values.volumes.influxdata.location }}
+        - name: tmp-ssl
+          mountPath: /tmp/influxdb/ssl
+        {{ if eq .Values.env.DEV_MODE false}}
+        - name: etcd-certs
+          mountPath: /run/secrets/etcd/
+        {{ end }}
+
+        env:
+        - name: AppName
+          value: "InfluxDBConnector"
+        - name: DEV_MODE
+          value: '{{ .Values.env.DEV_MODE }}'
+        - name: PROFILING_MODE
+          value: '{{ .Values.env.PROFILING_MODE }}'
+        - name: ETCD_HOST
+          value: {{ .Values.config.etcd.name }}
+        - name: ETCD_CLIENT_PORT
+          value: '{{ .Values.config.etcd.client_port }}'
+        - name: INFLUXDB_TLS_CIPHERS
+          value: {{ .Values.config.influxdbconnector.INFLUXDB_TLS_CIPHERS }}
+        {{- if eq .Values.config.influxdbconnector.IPC false}}
+        - name: SERVER_InfluxDBConnector_TYPE
+          value: "zmq_tcp"
+        - name: SERVER_InfluxDBConnector_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.influx_server_port }}"
+        - name: PUBLISHER_PointData_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_PointData_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.point_data_port }}"
+        - name: PUBLISHER_PointClassifierResults_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_PointClassifierResults_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.point_classifier_data_port }}"
+        - name: PUBLISHER_HumidityClassifierResults_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_HumidityClassifierResults_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.humidity_classifier_results_port }}"
+        - name: PUBLISHER_TSData_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_TSData_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.ts_data_port }}"
+        - name: PUBLISHER_RFCResults_TYPE
+          value: "zmq_tcp"
+        - name: PUBLISHER_RFCResults_ENDPOINT
+          value: "0.0.0.0:{{ .Values.config.influxdbconnector.rfc_results_port }}"
+        {{- if .Values.config.video_analytics }}
+        - name: SUBSCRIBER_ENDPOINT
+          value: "{{ .Values.config.video_analytics.name }}:{{ .Values.config.video_analytics.publish_port }}"
+        - name: SUBSCRIBER_TYPE
+          value: "zmq_tcp"
+        {{- end }}
+        {{- else }}
+        - name: SERVER_InfluxDBConnector_TYPE
+          value: "zmq_ipc"
+        - name: SERVER_InfluxDBConnector_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_PointData_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_PointData_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_PointClassifierResults_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_PointClassifierResults_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_HumidityClassifierResults_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_HumidityClassifierResults_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_TSData_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_TSData_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: PUBLISHER_RFCResults_TYPE
+          value: "zmq_ipc"
+        - name: PUBLISHER_RFCResults_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_ENDPOINT
+          value: "{{ .Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_TYPE
+          value: "zmq_ipc"
+        {{- end }}
+        {{ if eq .Values.env.DEV_MODE false}}
+        - name: CONFIGMGR_CACERT
+          value: "/run/secrets/etcd/ca_certificate.pem"
+        - name: CONFIGMGR_CERT
+          value: "/run/secrets/etcd/InfluxDBConnector_client_certificate.pem"
+        - name: CONFIGMGR_KEY
+          value: "/run/secrets/etcd/InfluxDBConnector_client_key.pem"
+        {{ end }}
+
+      volumes:
+      - name: {{ .Values.volumes.influxdata.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.volumes.influxdata.name }}
+      {{- if eq .Values.config.influxdbconnector.IPC true}}
+      - name: {{ .Values.volumes.eii_socket.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.volumes.eii_socket.name }}
+      {{- end }}
+      - name: tmp-ssl
+        emptyDir:
+          medium: Memory
+      {{ if eq .Values.env.DEV_MODE false}}
+      - name: etcd-certs
+        secret:
+          secretName: eii-certs
+          items:
+          - key: ca_certificate.pem
+            path: ca_certificate.pem
+          - key: InfluxDBConnector_client_certificate.pem
+            path: InfluxDBConnector_client_certificate.pem
+          - key: InfluxDBConnector_client_key.pem
+            path: InfluxDBConnector_client_key.pem
+      {{ end }}

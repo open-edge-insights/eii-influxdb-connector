@@ -21,13 +21,13 @@
 # Dockerfile for InfluxDBConnector
 
 ARG EII_VERSION
-ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}ia_eiibase:${EII_VERSION} as eiibase
+ARG UBUNTU_IMAGE_VERSION
+ARG ARTIFACTS="/artifacts"
+FROM ia_common:$EII_VERSION as common
+FROM ia_eiibase:${EII_VERSION} as builder
 LABEL description="InfluxDBConnector image"
 
-WORKDIR ${GO_WORK_DIR}
-
-ENV INFLUXDB_GO_PATH ${GOPATH}/src/github.com/influxdata/influxdb
+ARG INFLUXDB_GO_PATH=${GOPATH}/src/github.com/influxdata/influxdb
 RUN mkdir -p ${INFLUXDB_GO_PATH} && \
     git clone https://github.com/influxdata/influxdb ${INFLUXDB_GO_PATH} && \
     cd ${INFLUXDB_GO_PATH} && \
@@ -35,56 +35,67 @@ RUN mkdir -p ${INFLUXDB_GO_PATH} && \
 
 # Installing influxdb
 ARG INFLUXDB_VERSION
-RUN wget https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_amd64.deb && \
+RUN wget -q --show-progress https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_amd64.deb && \
     dpkg -i influxdb_${INFLUXDB_VERSION}_amd64.deb && \
     rm -rf influxdb_${INFLUXDB_VERSION}_amd64.deb
 
-RUN mkdir -p /etc/ssl/influxdb && \
-    mkdir -p /etc/ssl/ca
+WORKDIR ${GOPATH}/src/IEdgeInsights
+ARG CMAKE_INSTALL_PREFIX
+ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
+COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=common /eii/common/util/influxdb common/util/influxdb
+COPY --from=common /eii/common/util/util.go common/util/util.go
+COPY --from=common ${GOPATH}/src ${GOPATH}/src
+COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus $GOPATH/src/EIIMessageBus
+COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr $GOPATH/src/ConfigMgr
 
-FROM ${DOCKER_REGISTRY}ia_common:$EII_VERSION as common
+COPY . ./InfluxDBConnector
+RUN cp InfluxDBConnector/config/influxdb.conf /etc/influxdb/ && \
+    cp InfluxDBConnector/config/influxdb_devmode.conf /etc/influxdb/
 
-FROM eiibase
+ENV PATH="$PATH:/usr/local/go/bin" \
+    PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" \
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib"
 
-COPY --from=common ${GO_WORK_DIR}/common/libs ${GO_WORK_DIR}/common/libs
-COPY --from=common ${GO_WORK_DIR}/common/util ${GO_WORK_DIR}/common/util
-COPY --from=common ${GO_WORK_DIR}/common/cmake ${GO_WORK_DIR}/common/cmake
-COPY --from=common /usr/local/include /usr/local/include
-COPY --from=common /usr/local/lib /usr/local/lib
-COPY --from=common ${GO_WORK_DIR}/../EIIMessageBus ${GO_WORK_DIR}/../EIIMessageBus
-COPY --from=common ${GO_WORK_DIR}/../ConfigMgr ${GO_WORK_DIR}/../ConfigMgr
+# These flags are needed for enabling security while compiling and linking with cpuidcheck in golang
+ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fPIC" \
+    CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
-COPY . ./InfluxDBConnector/
+ARG ARTIFACTS
+RUN mkdir $ARTIFACTS && \
+    go build -o $ARTIFACTS/InfluxDBConnector InfluxDBConnector/InfluxDBConnector.go
 
-RUN cp ${GO_WORK_DIR}/InfluxDBConnector/config/influxdb.conf /etc/influxdb/ && \
-    cp ${GO_WORK_DIR}/InfluxDBConnector/config/influxdb_devmode.conf /etc/influxdb/
-RUN go build -o /EII/go/bin/InfluxDBConnector InfluxDBConnector/InfluxDBConnector.go
+RUN mv InfluxDBConnector/schema.json $ARTIFACTS && \
+    mv InfluxDBConnector/startup.sh $ARTIFACTS && \
+    mv InfluxDBConnector/influx_start.sh $ARTIFACTS
+
+FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
+ARG ARTIFACTS
+
+WORKDIR /app
+ARG CMAKE_INSTALL_PREFIX
+ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
+COPY --from=builder ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
+COPY --from=builder /usr/bin/influxd /usr/bin/influxd
+COPY --from=builder /usr/bin/influx /usr/bin/influx
+COPY --from=builder /etc/influxdb /etc/influxdb
+COPY --from=builder $ARTIFACTS .
+
 ARG EII_UID
 ARG EII_USER_NAME
-RUN chown ${EII_UID} ${GO_WORK_DIR}
-RUN chown -R ${EII_UID} /etc/ssl/influxdb && \
-    chown -R ${EII_UID} /etc/ssl/ca 
+RUN groupadd $EII_USER_NAME -g $EII_UID && \
+    useradd -r -u $EII_UID -g $EII_USER_NAME $EII_USER_NAME
+RUN mkdir -p /etc/ssl/influxdb && \
+    mkdir -p /etc/ssl/ca && \
+    mkdir -p /tmp/influxdb/log && \
+    touch /tmp/influxdb/log/influxd.log && \
+    chown -R ${EII_UID} /etc/ssl/influxdb && \
+    chown -R ${EII_UID} /etc/ssl/ca && \
+    chown ${EII_UID} /tmp/influxdb/log/influxd.log
 
-RUN mkdir -p ${GOPATH}/temp/IEdgeInsights/InfluxDBConnector && \
-    mv ${GO_WORK_DIR}/InfluxDBConnector/influx_start.sh ${GOPATH}/temp/IEdgeInsights/InfluxDBConnector/ && \
-    rm -rf ${GOPATH}/src && \
-    rm -rf ${GOPATH}/bin/dep && \
-    rm -rf ${GOPATH}/pkg && \
-    rm -rf /usr/local/go && \
-    mv ${GOPATH}/temp ${GOPATH}/src
+USER $EII_USER_NAME
 
-RUN chown -R ${EII_UID} ${GOPATH}/src
-
-#Removing build dependencies
-RUN apt-get remove -y wget && \
-    apt-get remove -y git && \
-    apt-get remove curl && \
-    apt-get autoremove -y
-
-COPY schema.json .
-COPY startup.sh .
-
+ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib
 HEALTHCHECK NONE
-
 ENTRYPOINT ["./startup.sh"]
-

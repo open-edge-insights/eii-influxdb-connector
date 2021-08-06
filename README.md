@@ -1,4 +1,9 @@
-# `InfluxDBConnector Module`
+**Contents**
+
+- [`InfluxDBConnector Module`](#influxdbconnector-module)
+  - [`Configuration`](#configuration)
+
+# InfluxDBConnector Module
 
 1. InfluxDBConnector will subscribe to the InfluxDB and start the zmq
    publisher, zmq subscriber threads, and zmq request reply thread
@@ -10,7 +15,7 @@
 4. zmq reply request service will receive the InfluxDB select query and
    response with the historical data.
 
-## `Configuration`
+## Configuration
 
 All the InfluxDBConnector module configuration are added into etcd (distributed
 key-value data store) under `AppName` as mentioned in the
@@ -32,15 +37,14 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
 
 In case of nested json data, by default InfluxDBConnector will flatten the nested json and push
 the flat data to InfluxDB, In order to avoid the flattening of any particular nested key please mention the
-tag key in the [ignore_attributes.cfg](../build/config/ignore_attributes.cfg) present in config directory
-in docker setup. Currently "defects" key is ignored from flattening. Every key to be ignored has to be in newline.
+tag key in the **[config.json](./config.json)** file. Currently "defects" key is ignored from flattening. Every key to be ignored has to be in newline.
 
  for example,
  ```
    ignore_keys = [ "Key1", "Key2", "Key3" ]
  ```
 By default, all the keys in the data schema will be pushed to InfluxDB as fields. In case if tags are present in data schema,
-it can be mentioned in the [etcd_pre_load.json](../build/provision/config/etcd_pre_load.json) then the data pushed to InfluxDB, will have fields and tags both.
+it can be mentioned in the **[config.json](./config.json)** file then the data pushed to InfluxDB, will have fields and tags both.
 Currently, no tags are present in the data scheme and tag_keys is kept blank in the config file.
 
 for example,
@@ -48,6 +52,6 @@ for example,
   tag_keys = [ "Tag1", "Tag2" ]
 ```
 
-For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](../Etcd_Secrets_Configuration.md) and
-[MessageBus Configuration](../common/libs/ConfigMgr/README.md#interfaces) respectively.
+For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](https://github.com/open-edge-insights/eii-core/blob/master/Etcd_Secrets_Configuration.md) and
+[MessageBus Configuration](https://github.com/open-edge-insights/eii-core/blob/master/common/libs/ConfigMgr/README.md#interfaces) respectively.
 

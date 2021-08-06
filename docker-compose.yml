@@ -29,10 +29,12 @@ services:
       context: $PWD/../InfluxDBConnector
       dockerfile: $PWD/../InfluxDBConnector/Dockerfile
       args:
+        UBUNTU_IMAGE_VERSION: ${UBUNTU_IMAGE_VERSION}
         EII_VERSION: ${EII_VERSION}
         EII_UID: ${EII_UID}
+        EII_USER_NAME: ${EII_USER_NAME}
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
-        DOCKER_REGISTRY: ${DOCKER_REGISTRY}
+        CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
     read_only: true
     ipc: "none"
     security_opt:
@@ -40,18 +42,17 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "exit", "0"]
       interval: 5m
-    image: ${DOCKER_REGISTRY}ia_influxdbconnector:${EII_VERSION}
+    image: ${DOCKER_REGISTRY}openedgeinsights/ia_influxdbconnector:${EII_VERSION}
     container_name: ia_influxdbconnector
     hostname: ia_influxdbconnector
-    network_mode: host
     restart: unless-stopped
     environment:
       AppName: "InfluxDBConnector"
       CertType: "zmq,pem"
       DEV_MODE: ${DEV_MODE}
       PROFILING_MODE: ${PROFILING_MODE}
-      no_proxy: ${eii_no_proxy},${ETCD_HOST}
-      NO_PROXY: ${eii_no_proxy},${ETCD_HOST}
+      no_proxy: ${ETCD_HOST}
+      NO_PROXY: ${ETCD_HOST}
       ETCD_HOST: ${ETCD_HOST}
       ETCD_CLIENT_PORT: ${ETCD_CLIENT_PORT}
       ETCD_PREFIX: ${ETCD_PREFIX}
@@ -60,9 +61,16 @@ services:
       - "vol_influxdb_data:/influxdata"
       - "vol_eii_socket:${SOCKET_DIR}"
       - "vol_influxdb_conf:/tmp/influxdb"
-    user: ${EII_UID}
     ports:
       - "$INFLUXDB_PORT:$INFLUXDB_PORT"
+      - 65145:65145
+      - 65030:65030
+      - 65031:65031
+      - 65032:65032
+      - 65033:65033
+      - 65034:65034
+    networks:
+      - eii
     secrets:
       - ca_etcd
       - etcd_InfluxDBConnector_cert
