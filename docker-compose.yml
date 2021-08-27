@@ -61,7 +61,6 @@ services:
       - "vol_influxdb_data:/influxdata"
       - "vol_eii_socket:${SOCKET_DIR}"
       - "vol_influxdb_conf:/tmp/influxdb"
-      - "vol_influx_history_data:/home/${EII_USER_NAME}"
     ports:
       - "$INFLUXDB_PORT:$INFLUXDB_PORT"
       - 65145:65145
@@ -86,12 +85,6 @@ volumes:
       device: ${EII_INSTALL_PATH}/data/influxdata
 
   vol_influxdb_conf:
-    driver: local
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
-
-  vol_influx_history_data:
     driver: local
     driver_opts:
       type: tmpfs
