@@ -89,11 +89,14 @@ RUN groupadd $EII_USER_NAME -g $EII_UID && \
 RUN mkdir -p /etc/ssl/influxdb && \
     mkdir -p /etc/ssl/ca && \
     mkdir -p /tmp/influxdb/log && \
+    mkdir -p /influxdata && \
     touch /tmp/influxdb/log/influxd.log && \
     chown -R ${EII_UID} /etc/ssl/influxdb && \
     chown -R ${EII_UID} /etc/ssl/ca && \
-    chown ${EII_UID} /tmp/influxdb/log/influxd.log
-
+    chown -R ${EII_UID}:${EII_UID} /influxdata && \
+    chown -R ${EII_UID}:${EII_UID} /tmp/influxdb && \
+    chmod -R 760 /influxdata && \
+    chmod -R 760 /tmp/influxdb
 USER $EII_USER_NAME
 
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib
