@@ -156,7 +156,7 @@ func (CfgMgr *ConfigManager) ReadCertKey(keyName string, filePath string) error 
 	}
 
 	if filePath != "" {
-		err = ioutil.WriteFile(filePath, []byte(value), 0644)
+		err = ioutil.WriteFile(filePath, []byte(value), 0400)
 		if err != nil {
 			glog.Errorf("Error creating %v", filePath)
 			return err
