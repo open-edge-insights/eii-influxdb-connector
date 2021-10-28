@@ -73,7 +73,13 @@ RUN mkdir -p ${GOPATH}/temp/IEdgeInsights/InfluxDBConnector && \
     rm -rf /usr/local/go && \
     mv ${GOPATH}/temp ${GOPATH}/src
 
-RUN chown -R ${EII_UID} ${GOPATH}/src
+RUN chown -R ${EII_UID} ${GOPATH}/src && \
+    mkdir -p /influxdata && \
+    mkdir -p /tmp/influxdb/ && \
+    chown -R ${EII_UID}:${EII_UID} /influxdata && \
+    chown -R ${EII_UID}:${EII_UID} /tmp/influxdb && \
+    chmod -R 760 /influxdata && \
+    chmod -R 760 /tmp/influxdb
 
 #Removing build dependencies
 RUN apt-get remove -y wget && \
