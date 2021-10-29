@@ -61,8 +61,6 @@ services:
       - "vol_eii_socket:${SOCKET_DIR}"
       - "vol_influxdb_conf:/tmp/influxdb"
     user: ${EII_UID}
-    ports:
-      - "$INFLUXDB_PORT:$INFLUXDB_PORT"
     secrets:
       - ca_etcd
       - etcd_InfluxDBConnector_cert
