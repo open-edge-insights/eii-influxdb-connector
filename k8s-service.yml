@@ -28,9 +28,9 @@ spec:
     app: influxdbconnector
   ports:
   - name: point-data-port
-    port: 65033
+    port: 65015
   - name: point-classifier-data-port
-    port: 65034
+    port: 65016
   - name: http
     port: 8086
   - name: humidity-classifier-results-port
