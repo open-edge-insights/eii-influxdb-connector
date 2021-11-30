@@ -23,8 +23,8 @@ SOFTWARE.
 package submanager
 
 import (
-	eiimsgbus "EIIMessageBus/eiimsgbus"
-	common "IEdgeInsights/InfluxDBConnector/common"
+	eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
+	common "influxdbconnector/common"
 	"encoding/json"
 	"strconv"
 	"time"

@@ -32,7 +32,7 @@ import (
 	"strings"
 	"time"
 
-	common "IEdgeInsights/InfluxDBConnector/common"
+	common "influxdbconnector/common"
 
 	"github.com/golang/glog"
 )

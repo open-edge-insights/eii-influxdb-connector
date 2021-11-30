@@ -26,12 +26,12 @@ import (
 	"flag"
 	"os"
 
-	eiimsgbus "EIIMessageBus/eiimsgbus"
-	common "IEdgeInsights/InfluxDBConnector/common"
-	configManager "IEdgeInsights/InfluxDBConnector/configmanager"
-	dbManager "IEdgeInsights/InfluxDBConnector/dbmanager"
-	pubManager "IEdgeInsights/InfluxDBConnector/pubmanager"
-	subManager "IEdgeInsights/InfluxDBConnector/submanager"
+	eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
+	common "influxdbconnector/common"
+	configManager "influxdbconnector/configmanager"
+	dbManager "influxdbconnector/dbmanager"
+	pubManager "influxdbconnector/pubmanager"
+	subManager "influxdbconnector/submanager"
 	"strconv"
 
 	"github.com/golang/glog"

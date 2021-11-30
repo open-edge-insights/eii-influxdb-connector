@@ -27,9 +27,9 @@ import (
 	"errors"
 	"regexp"
 
-	types "EIIMessageBus/pkg/types"
-	common "IEdgeInsights/InfluxDBConnector/common"
-	inflxUtil "IEdgeInsights/common/util/influxdb"
+	types "github.com/open-edge-insights/eii-messagebus-go/pkg/types"
+	common "influxdbconnector/common"
+	inflxUtil "influxdbconnector/util/influxdb"
 
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"

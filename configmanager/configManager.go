@@ -23,14 +23,14 @@ SOFTWARE.
 package configmanager
 
 import (
-	util "IEdgeInsights/common/util"
+	util "influxdbconnector/util"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"strconv"
 
-	eiicfgmgr "ConfigMgr/eiiconfigmgr"
-	common "IEdgeInsights/InfluxDBConnector/common"
+	eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
+	common "influxdbconnector/common"
 
 	"github.com/golang/glog"
 )
