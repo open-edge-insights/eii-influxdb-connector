@@ -1,7 +1,7 @@
 **Contents**
 
-- [`InfluxDBConnector Module`](#influxdbconnector-module)
-  - [`Configuration`](#configuration)
+- [InfluxDBConnector Module](#influxdbconnector-module)
+  - [Configuration](#configuration)
 
 # InfluxDBConnector Module
 
@@ -23,6 +23,7 @@ environment section of this app's service definition in docker-compose.
 
 If `AppName` is `InfluxDBConnector`, then the app's config would look like as below
  for `/InfluxDBConnector/config` key in Etcd:
+
  ```
     "influxdb": {
             "retention": "1h30m5s",
@@ -40,18 +41,20 @@ the flat data to InfluxDB, In order to avoid the flattening of any particular ne
 tag key in the **[config.json](./config.json)** file. Currently "defects" key is ignored from flattening. Every key to be ignored has to be in newline.
 
  for example,
+
  ```
    ignore_keys = [ "Key1", "Key2", "Key3" ]
  ```
+
 By default, all the keys in the data schema will be pushed to InfluxDB as fields. In case if tags are present in data schema,
 it can be mentioned in the **[config.json](./config.json)** file then the data pushed to InfluxDB, will have fields and tags both.
 Currently, no tags are present in the data scheme and tag_keys is kept blank in the config file.
 
 for example,
+
 ```
   tag_keys = [ "Tag1", "Tag2" ]
 ```
 
 For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](https://github.com/open-edge-insights/eii-core/blob/master/Etcd_Secrets_Configuration.md) and
 [MessageBus Configuration](https://github.com/open-edge-insights/eii-core/blob/master/common/libs/ConfigMgr/README.md#interfaces) respectively.
-
