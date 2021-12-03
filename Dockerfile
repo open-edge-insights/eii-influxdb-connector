@@ -73,7 +73,7 @@ RUN mv InfluxDBConnector/schema.json $ARTIFACTS && \
 FROM ubuntu:$UBUNTU_IMAGE_VERSION as runtime
 ARG ARTIFACTS
 
-RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5
+RUN apt update && apt install --no-install-recommends -y libcjson1 libzmq5 zlib1g
 
 WORKDIR /app
 ARG CMAKE_INSTALL_PREFIX
