@@ -101,8 +101,10 @@ RUN mkdir -p /etc/ssl/influxdb && \
     chown -R ${EII_UID}:${EII_UID} /tmp/influxdb && \
     chmod -R 760 /influxdata && \
     chmod -R 760 /tmp/influxdb
-USER $EII_USER_NAME
 
+ARG EII_INSTALL_PATH
+ENV EIIUSER=${EII_USER_NAME}
+ENV EIIUID=${EII_UID}
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib
 HEALTHCHECK NONE
-ENTRYPOINT ["./startup.sh"]
+ENTRYPOINT ["./startup.sh", "./InfluxDBConnector"]

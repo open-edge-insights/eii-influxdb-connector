@@ -31,4 +31,9 @@ else
     mkdir -p /tmp/influxdb/ssl
     mkdir -p /tmp/influxdb/log
 fi
-./InfluxDBConnector
+
+chown -R $EIIUID:$EIIUID /influxdata
+chown -R $EIIUID:$EIIUID /tmp
+chmod -R 760 /tmp
+
+exec runuser -u $EIIUSER -- $@
