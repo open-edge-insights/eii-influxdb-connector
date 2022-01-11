@@ -29,9 +29,7 @@ LABEL description="InfluxDBConnector image"
 
 ARG INFLUXDB_GO_PATH=${GOPATH}/src/github.com/influxdata/influxdb
 RUN mkdir -p ${INFLUXDB_GO_PATH} && \
-    git clone https://github.com/influxdata/influxdb ${INFLUXDB_GO_PATH} && \
-    cd ${INFLUXDB_GO_PATH} && \
-    git checkout -b v1.6.0 tags/v1.6.0
+    git clone --single-branch -b v1.6.0 https://github.com/influxdata/influxdb ${INFLUXDB_GO_PATH}
 
 # Installing influxdb
 ARG INFLUXDB_VERSION
