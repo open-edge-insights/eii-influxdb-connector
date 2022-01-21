@@ -35,6 +35,7 @@ services:
         EII_USER_NAME: ${EII_USER_NAME}
         INFLUXDB_VERSION: ${INFLUXDB_VERSION}
         CMAKE_INSTALL_PREFIX: ${EII_INSTALL_PATH}
+        EII_INSTALL_PATH: ${EII_INSTALL_PATH}
     read_only: true
     ipc: "none"
     security_opt:
@@ -57,11 +58,11 @@ services:
       ETCD_PREFIX: ${ETCD_PREFIX}
       INFLUXDB_TLS_CIPHERS: ${TLS_CIPHERS}
     volumes:
-      - ${EII_INSTALL_PATH}/data/influxdata:/influxdata
+      - "vol_influxdb_data:/influxdata"
       - "${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}"
-      - "vol_influxdb_conf:/tmp/influxdb"
       - ./Certificates/InfluxDBConnector:/run/secrets/InfluxDBConnector
       - ./Certificates/rootca:/run/secrets/rootca
+      - "vol_influxdb_conf:/tmp/influxdb"
     ports:
       - "$INFLUXDB_PORT:$INFLUXDB_PORT"
       - 65145:65145
@@ -74,8 +75,14 @@ services:
       - eii
 
 volumes:
+  vol_influxdb_data:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
   vol_influxdb_conf:
     driver: local
     driver_opts:
       type: tmpfs
       device: tmpfs
+
