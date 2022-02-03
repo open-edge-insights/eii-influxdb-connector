@@ -23,14 +23,16 @@ SOFTWARE.
 package configmanager
 
 import (
-	util "influxdbconnector/util"
 	"encoding/json"
 	"fmt"
+	util "influxdbconnector/util"
 	"io/ioutil"
+	"os"
 	"strconv"
 
-	eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
 	common "influxdbconnector/common"
+
+	eiicfgmgr "github.com/open-edge-insights/eii-configmgr-go/eiiconfigmgr"
 
 	"github.com/golang/glog"
 )
@@ -60,6 +62,7 @@ func (CfgMgr *ConfigManager) Init() {
 		glog.Fatalf("Config Manager initialization failed...")
 	}
 }
+
 // ReadInfluxConfig will read the influxdb configuration
 // from the json file
 func (CfgMgr *ConfigManager) ReadInfluxConfig() (common.DbCredential, error) {
@@ -94,8 +97,8 @@ func (CfgMgr *ConfigManager) ReadInfluxConfig() (common.DbCredential, error) {
 		return influxCred, err
 	}
 
-	influxCred.Username = influx.Influxdb.Username
-	influxCred.Password = influx.Influxdb.Password
+	influxCred.Username = os.Getenv("INFLUXDB_USERNAME")
+	influxCred.Password = os.Getenv("INFLUXDB_PASSWORD")
 	influxCred.Database = influx.Influxdb.Dbname
 	influxCred.Retention = influx.Influxdb.Retention
 	influxCred.Port = influx.Influxdb.Port
@@ -117,7 +120,6 @@ func (CfgMgr *ConfigManager) ReadContainerInfo() (common.AppConfig, error) {
 		glog.Errorf("Fail to read DEV_MODE from etcd: %v", err)
 		return cInfo, err
 	}
-
 
 	appName, err := CfgMgr.ConfigMgr.GetAppName()
 	if err != nil {
@@ -215,7 +217,6 @@ func (CfgMgr *ConfigManager) ReadInfluxDBConnectorConfig() (map[string][]string,
 	glog.Infof("Influxdbconnector configs are: %v", influxdbConnCon)
 	return influxdbConnCon, nil
 }
-
 
 // ReadInfluxDBQueryConfig will read the file
 // and create a Blacklist QueryList

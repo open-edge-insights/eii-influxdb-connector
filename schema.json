@@ -12,8 +12,6 @@
       "type": "object",
       "required": [
         "retention",
-        "username",
-        "password",
         "dbname",
         "ssl",
         "verifySsl",

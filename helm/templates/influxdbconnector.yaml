@@ -97,6 +97,10 @@ spec:
           value: {{ .Values.config.etcd.name }}
         - name: ETCD_CLIENT_PORT
           value: '{{ .Values.config.etcd.client_port }}'
+        - name: INFLUXDB_USERNAME
+          value: '{{ .Values.env.INFLUXDB_USERNAME }}'
+        - name: INFLUXDB_PASSWORD
+          value: '{{ .Values.env.INFLUXDB_PASSWORD }}'
         - name: INFLUXDB_TLS_CIPHERS
           value: {{ .Values.config.influxdbconnector.INFLUXDB_TLS_CIPHERS }}
         {{- if eq .Values.config.influxdbconnector.IPC false}}
