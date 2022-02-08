@@ -53,6 +53,7 @@ var InfluxObj dbManager.InfluxDBManager
 var pubMgr pubManager.PubManager
 var credConfig common.DbCredential
 var runtimeInfo common.AppConfig
+// CfgMgr is an object for ConfigManager
 var CfgMgr configManager.ConfigManager
 
 //Function to read the DB credential and container runtime info from the config file
@@ -92,7 +93,6 @@ func StartDb() {
 
 // StartPublisher function to register the publisher and subscribe to influxdb
 // ZeroMQ interface
-
 func StartPublisher() {
 	InfluxObj.CnInfo = runtimeInfo
 

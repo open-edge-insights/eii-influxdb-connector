@@ -50,7 +50,7 @@ type InfluxConfig struct {
 	} `json:"influxdb"`
 }
 
-// configmanager structure
+// ConfigManager structure
 type ConfigManager struct {
 	ConfigMgr *eiicfgmgr.ConfigMgr
 }
