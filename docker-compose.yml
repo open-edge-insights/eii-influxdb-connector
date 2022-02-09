@@ -62,8 +62,8 @@ services:
     volumes:
       - "vol_influxdb_data:/influxdata"
       - "${EII_INSTALL_PATH}/sockets:${SOCKET_DIR}"
-      - ./Certificates/InfluxDBConnector:/run/secrets/InfluxDBConnector
-      - ./Certificates/rootca:/run/secrets/rootca
+      - ./Certificates/InfluxDBConnector:/run/secrets/InfluxDBConnector:ro
+      - ./Certificates/rootca/cacert.pem:/run/secrets/rootca/cacert.pem:ro
       - "vol_influxdb_conf:/tmp/influxdb"
     ports:
       - "$INFLUXDB_PORT:$INFLUXDB_PORT"
