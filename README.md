@@ -27,8 +27,6 @@ If `AppName` is `InfluxDBConnector`, then the app's config would look like as be
  ```
     "influxdb": {
             "retention": "1h30m5s",
-            "username": "admin",
-            "password": "admin123",
             "dbname": "datain",
             "ssl": "True",
             "verifySsl": "False",
