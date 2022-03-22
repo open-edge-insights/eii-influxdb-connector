@@ -70,8 +70,6 @@ spec:
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
         - containerPort: {{ .Values.config.influxdbconnector.influx_http }}
-        securityContext:
-          privileged: true
         volumeMounts:
         {{- if eq .Values.config.influxdbconnector.IPC true}}
         - name: {{ .Values.volumes.eii_socket.name }}
