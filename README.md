@@ -6,18 +6,14 @@
 
 ## InfluxDBConnector Module
 
-InfluxDBConnector service stores the timeseries/video metadata received over the EII messagebus to InfluxDB database.
-
-The high level logical flow of InfluxDBConnector service is as below:
-
-1. InfluxDBConnector service will subscribe to the InfluxDB and start the EII messagebus
-   publisher, EII messagebus subscriber threads, and EII messagebus request reply thread
+1. InfluxDBConnector will subscribe to the InfluxDB and start the zmq
+   publisher, zmq subscriber threads, and zmq request reply thread
    based on PubTopics, SubTopics and QueryTopics configuration.
-2. EII messagebus subscriber thread connects to the PUB socket of messagebus on which
+2. zmq subscriber thread connects to the PUB socket of zmq bus on which
    the data is published by VideoAnalytics and push it to the InfluxDB
-3. EII messagebus publisher thread will publish the point data ingested by the telegraf
+3. zmq publisher thread will publish the point data ingested by the telegraf
    and the classifier result coming out of the point data analytics.
-4. EII messagebus reply request service will receive the InfluxDB select query and
+4. zmq reply request service will receive the InfluxDB select query and
    response with the historical data.
 
 ### Configuration
