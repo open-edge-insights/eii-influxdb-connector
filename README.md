@@ -1,9 +1,10 @@
-**Contents**
+# Contents
 
-- [`InfluxDBConnector Module`](#influxdbconnector-module)
-  - [`Configuration`](#configuration)
+- [Contents](#contents)
+  - [InfluxDBConnector Module](#influxdbconnector-module)
+    - [Configuration](#configuration)
 
-# InfluxDBConnector
+## InfluxDBConnector Module
 
 InfluxDBConnector service stores the timeseries/video metadata received over the EII messagebus to InfluxDB database.
 
@@ -19,7 +20,7 @@ The high level logical flow of InfluxDBConnector service is as below:
 4. EII messagebus reply request service will receive the InfluxDB select query and
    response with the historical data.
 
-## Configuration
+### Configuration
 
 All the InfluxDBConnector module configuration are added into etcd (distributed
 key-value data store) under `AppName` as mentioned in the
@@ -27,11 +28,10 @@ environment section of this app's service definition in docker-compose.
 
 If `AppName` is `InfluxDBConnector`, then the app's config would look like as below
  for `/InfluxDBConnector/config` key in Etcd:
+
  ```
     "influxdb": {
             "retention": "1h30m5s",
-            "username": "admin",
-            "password": "admin123",
             "dbname": "datain",
             "ssl": "True",
             "verifySsl": "False",
@@ -44,18 +44,20 @@ the flat data to InfluxDB, In order to avoid the flattening of any particular ne
 tag key in the **[config.json](./config.json)** file. Currently "defects" key is ignored from flattening. Every key to be ignored has to be in newline.
 
  for example,
+
  ```
    ignore_keys = [ "Key1", "Key2", "Key3" ]
  ```
+
 By default, all the keys in the data schema will be pushed to InfluxDB as fields. In case if tags are present in data schema,
 it can be mentioned in the **[config.json](./config.json)** file then the data pushed to InfluxDB, will have fields and tags both.
 Currently, no tags are present in the data scheme and tag_keys is kept blank in the config file.
 
 for example,
+
 ```
   tag_keys = [ "Tag1", "Tag2" ]
 ```
 
 For more details on Etcd secrets and messagebus endpoint configuration, visit [Etcd_Secrets_Configuration.md](https://github.com/open-edge-insights/eii-core/blob/master/Etcd_Secrets_Configuration.md) and
 [MessageBus Configuration](https://github.com/open-edge-insights/eii-core/blob/master/common/libs/ConfigMgr/README.md#interfaces) respectively.
-

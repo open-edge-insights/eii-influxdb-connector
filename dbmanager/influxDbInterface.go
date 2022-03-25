@@ -27,9 +27,9 @@ import (
 	"os/exec"
 	"strings"
 
-	common "IEdgeInsights/InfluxDBConnector/common"
-	util "IEdgeInsights/common/util"
-	inflxUtil "IEdgeInsights/common/util/influxdb"
+	common "influxdbconnector/common"
+	util "influxdbconnector/util"
+	inflxUtil "influxdbconnector/util/influxdb"
 
 	"github.com/golang/glog"
 )

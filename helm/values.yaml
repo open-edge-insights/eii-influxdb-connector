@@ -14,6 +14,6 @@ volumes:
   influxdata:
     name: vol-influxdata
     size: 1Gi
-    location: "/influxdata"
-    hostpath: "/opt/intel/eii/data"
+    location: "/opt/intel/eii/data/influxdata"
+    hostpath: "/opt/intel/eii/data/influxdata"
 

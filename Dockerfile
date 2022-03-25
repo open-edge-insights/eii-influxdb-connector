@@ -29,9 +29,7 @@ LABEL description="InfluxDBConnector image"
 
 ARG INFLUXDB_GO_PATH=${GOPATH}/src/github.com/influxdata/influxdb
 RUN mkdir -p ${INFLUXDB_GO_PATH} && \
-    git clone https://github.com/influxdata/influxdb ${INFLUXDB_GO_PATH} && \
-    cd ${INFLUXDB_GO_PATH} && \
-    git checkout -b v1.6.0 tags/v1.6.0
+    git clone --single-branch -b v1.6.0 https://github.com/influxdata/influxdb ${INFLUXDB_GO_PATH}
 
 # Installing influxdb
 ARG INFLUXDB_VERSION
@@ -41,11 +39,34 @@ RUN wget -q --show-progress https://dl.influxdata.com/influxdb/releases/influxdb
 
 WORKDIR ${GOPATH}/src/IEdgeInsights
 ARG CMAKE_INSTALL_PREFIX
+
+# Install libzmq
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/zeromq/libzmq/releases/download/v4.3.4/zeromq-4.3.4.tar.gz -O zeromq.tar.gz && \
+    tar xf zeromq.tar.gz && \
+    cd zeromq-4.3.4 && \
+    ./configure --prefix=${CMAKE_INSTALL_PREFIX} && \
+    make install
+
+# Install cjson
+RUN rm -rf deps && \
+    mkdir -p deps && \
+    cd deps && \
+    wget -q --show-progress https://github.com/DaveGamble/cJSON/archive/v1.7.12.tar.gz -O cjson.tar.gz && \
+    tar xf cjson.tar.gz && \
+    cd cJSON-1.7.12 && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_PREFIX}/include -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} .. && \
+    make install
+
 ENV CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/include ${CMAKE_INSTALL_PREFIX}/include
 COPY --from=common ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib
-COPY --from=common /eii/common/util/influxdb common/util/influxdb
-COPY --from=common /eii/common/util/util.go common/util/util.go
+COPY --from=common /eii/common/util/influxdb ./InfluxDBConnector/util/influxdb
+COPY --from=common /eii/common/util/util.go ./InfluxDBConnector/util/util.go
+#COPY --from=common /eii/common/go.mod common/
 COPY --from=common ${GOPATH}/src ${GOPATH}/src
 COPY --from=common /eii/common/libs/EIIMessageBus/go/EIIMessageBus $GOPATH/src/EIIMessageBus
 COPY --from=common /eii/common/libs/ConfigMgr/go/ConfigMgr $GOPATH/src/ConfigMgr
@@ -59,12 +80,13 @@ ENV PATH="$PATH:/usr/local/go/bin" \
     LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib"
 
 # These flags are needed for enabling security while compiling and linking with cpuidcheck in golang
-ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fPIC" \
+ENV CGO_CFLAGS="$CGO_FLAGS -I ${CMAKE_INSTALL_PREFIX}/include -O2 -D_FORTIFY_SOURCE=2 -Werror=format-security -fstack-protector-strong -fno-strict-overflow -fno-delete-null-pointer-checks -fwrapv -fPIC" \
     CGO_LDFLAGS="$CGO_LDFLAGS -L${CMAKE_INSTALL_PREFIX}/lib -z noexecstack -z relro -z now"
 
 ARG ARTIFACTS
 RUN mkdir $ARTIFACTS && \
-    go build -o $ARTIFACTS/InfluxDBConnector InfluxDBConnector/InfluxDBConnector.go
+    cd InfluxDBConnector && \
+    GO111MODULE=on go build -o $ARTIFACTS/InfluxDBConnector InfluxDBConnector.go
 
 RUN mv InfluxDBConnector/schema.json $ARTIFACTS && \
     mv InfluxDBConnector/startup.sh $ARTIFACTS && \
@@ -97,8 +119,13 @@ RUN mkdir -p /etc/ssl/influxdb && \
     chown -R ${EII_UID}:${EII_UID} /tmp/influxdb && \
     chmod -R 760 /influxdata && \
     chmod -R 760 /tmp/influxdb
-USER $EII_USER_NAME
 
+ARG EII_INSTALL_PATH
+ENV EIIUSER=${EII_USER_NAME}
+ENV EIIUID=${EII_UID}
 ENV LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:${CMAKE_INSTALL_PREFIX}/lib
+
+USER ${EII_USER_NAME}
+
 HEALTHCHECK NONE
-ENTRYPOINT ["./startup.sh"]
+ENTRYPOINT ["./startup.sh", "./InfluxDBConnector"]

@@ -32,7 +32,7 @@ import (
 	"strings"
 	"time"
 
-	common "IEdgeInsights/InfluxDBConnector/common"
+	common "influxdbconnector/common"
 
 	"github.com/golang/glog"
 )
@@ -78,7 +78,7 @@ func (subCtx *InfluxSubCtx) httpHandlerFunc(w http.ResponseWriter, req *http.Req
 	var tsTemp1, tsTemp2 int64
 
 	if common.Profiling == true {
-		temp := strings.Fields(string(reqBody))
+		temp := strings.Fields(strings.Replace(string(reqBody), "\n", "", -1))
 		tsTemp1 = time.Now().UnixNano() / 1e6
 		fields := temp[1] + ",ts_idbconn_pub_entry=" + strconv.FormatInt(tsTemp1, 10)
 		reqBody = []byte(temp[0] + " " + fields + " " + temp[2])

@@ -116,14 +116,14 @@ func main() {
 	}
 
 	fmt.Printf("-- Loading Publisher configuration file %s\n", *pubconfigFile)
-	pubconfig, err := eiimsgbus.ReadJsonConfig(*pubconfigFile)
+	pubconfig, err := eiimsgbus.ReadJSONConfig(*pubconfigFile)
 	if err != nil {
 		fmt.Printf("-- Failed to parse config: %v\n", err)
 		return
 	}
 
 	fmt.Printf("-- Loading Subscriber configuration file %s\n", *subconfigFile)
-	subconfig, err := eiimsgbus.ReadJsonConfig(*subconfigFile)
+	subconfig, err := eiimsgbus.ReadJSONConfig(*subconfigFile)
 	if err != nil {
 		fmt.Printf("-- Failed to parse config: %v\n", err)
 		return

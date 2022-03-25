@@ -26,12 +26,12 @@ import (
 	"flag"
 	"os"
 
-	eiimsgbus "EIIMessageBus/eiimsgbus"
-	common "IEdgeInsights/InfluxDBConnector/common"
-	configManager "IEdgeInsights/InfluxDBConnector/configmanager"
-	dbManager "IEdgeInsights/InfluxDBConnector/dbmanager"
-	pubManager "IEdgeInsights/InfluxDBConnector/pubmanager"
-	subManager "IEdgeInsights/InfluxDBConnector/submanager"
+	eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
+	common "influxdbconnector/common"
+	configManager "influxdbconnector/configmanager"
+	dbManager "influxdbconnector/dbmanager"
+	pubManager "influxdbconnector/pubmanager"
+	subManager "influxdbconnector/submanager"
 	"strconv"
 
 	"github.com/golang/glog"
@@ -53,6 +53,7 @@ var InfluxObj dbManager.InfluxDBManager
 var pubMgr pubManager.PubManager
 var credConfig common.DbCredential
 var runtimeInfo common.AppConfig
+// CfgMgr is an object for ConfigManager
 var CfgMgr configManager.ConfigManager
 
 //Function to read the DB credential and container runtime info from the config file
@@ -92,7 +93,6 @@ func StartDb() {
 
 // StartPublisher function to register the publisher and subscribe to influxdb
 // ZeroMQ interface
-
 func StartPublisher() {
 	InfluxObj.CnInfo = runtimeInfo
 

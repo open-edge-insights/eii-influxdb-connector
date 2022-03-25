@@ -31,8 +31,8 @@ import (
 	"strconv"
 	"time"
 
-	common "IEdgeInsights/InfluxDBConnector/common"
-	inflxUtil "IEdgeInsights/common/util/influxdb"
+	common "influxdbconnector/common"
+	inflxUtil "influxdbconnector/util/influxdb"
 	"github.com/golang/glog"
 	"github.com/influxdata/influxdb/client/v2"
 )

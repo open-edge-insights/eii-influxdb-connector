@@ -23,8 +23,8 @@ SOFTWARE.
 package submanager
 
 import (
-	eiimsgbus "EIIMessageBus/eiimsgbus"
-	common "IEdgeInsights/InfluxDBConnector/common"
+	eiimsgbus "github.com/open-edge-insights/eii-messagebus-go/eiimsgbus"
+	common "influxdbconnector/common"
 	"encoding/json"
 	"strconv"
 	"time"
@@ -115,20 +115,23 @@ func (subMgr *SubManager) ReceiveFromAll(out common.InsertInterface, worker int)
 
 func processMsg(sub *eiimsgbus.Subscriber, out common.InsertInterface, workerID int) {
 	for {
-		msg := <-sub.MessageChannel
-		// parse it get the InfluxRow object ir.
+		select {
+		case msg := <-sub.MessageChannel:
+			if common.Profiling == true {
+				msg.Data["tsIdbconnEntry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+			}
 
-		if common.Profiling == true {
-			msg.Data["tsIdbconnEntry"] = strconv.FormatInt((time.Now().UnixNano() / 1e6), 10)
+			bytemsg, marshalError := json.Marshal(msg.Data)
+			if marshalError != nil {
+				glog.Errorf("Error while converting data: %v", marshalError)
+				continue;
+			}
+
+			glog.Infof("Subscribe data received from topic: %s in subroutine %v", msg.Name, workerID)
+			out.Write(bytemsg, msg.Name)
+		case err := <-sub.ErrorChannel:
+			glog.Errorf("-- Error receiving message: %v", err)
 		}
-
-		bytemsg, err := json.Marshal(msg.Data)
-		if err != nil {
-			glog.Errorf("error: %s", err)
-		}
-
-		glog.Infof("Subscribe data received from topic: %s in subroutine %v", msg.Name, workerID)
-		out.Write(bytemsg, msg.Name)
 	}
 }
 

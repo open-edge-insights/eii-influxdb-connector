@@ -31,4 +31,5 @@ else
     mkdir -p /tmp/influxdb/ssl
     mkdir -p /tmp/influxdb/log
 fi
+
 ./InfluxDBConnector
