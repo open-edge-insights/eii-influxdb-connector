@@ -1,9 +1,10 @@
-**Contents**
+# Contents
 
-- [InfluxDBConnector Module](#influxdbconnector-module)
-  - [Configuration](#configuration)
+- [Contents](#contents)
+  - [InfluxDBConnector Module](#influxdbconnector-module)
+    - [Configuration](#configuration)
 
-# InfluxDBConnector Module
+## InfluxDBConnector Module
 
 1. InfluxDBConnector will subscribe to the InfluxDB and start the zmq
    publisher, zmq subscriber threads, and zmq request reply thread
@@ -15,7 +16,7 @@
 4. zmq reply request service will receive the InfluxDB select query and
    response with the historical data.
 
-## Configuration
+### Configuration
 
 All the InfluxDBConnector module configuration are added into etcd (distributed
 key-value data store) under `AppName` as mentioned in the
