@@ -31,3 +31,6 @@ spec:
   resources:
     requests:
       storage: {{ .Values.volumes.influxdata.size }}
+  selector:
+    matchLabels:
+      name: "influxdbconnector"
